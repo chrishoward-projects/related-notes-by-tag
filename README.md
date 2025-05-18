@@ -36,6 +36,7 @@ This plugin is currently in **Phase 1: Core Functionality Development**.
     - Show note title only vs. show title + tag matches
     - Toggle display of note path/location
     - Maximum number of notes to display per tag
+    - Sort by name or date edited
 2.  **Filtering Options:**
     - Minimum tag match threshold (e.g., show notes that match at least 2 tags)
     - Option to exclude certain tags from matching

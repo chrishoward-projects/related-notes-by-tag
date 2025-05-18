@@ -122,26 +122,23 @@ export class RelatedNotesView extends ItemView {
 
       files.forEach(file => {
         const listItemEl = listEl.createEl('li', { cls: 'related-notes-list-item' });
+
+
         const linkEl = listItemEl.createEl('a', {
           text: file.basename,
           href: '#',
+          title: 'ctrl/cmd click to open in new tab'
         });
         linkEl.addEventListener('click', (evt: MouseEvent) => {
           evt.preventDefault(); // It's good practice to keep this for anchor tags used as buttons
           // Use a different method to open the file
-          this.app.workspace.getLeaf().openFile(file,{active:true});
+          if (evt.ctrlKey || evt.metaKey) {
+            this.app.workspace.getLeaf('tab').openFile(file,{active:true});
+          } else {
+            this.app.workspace.getLeaf().openFile(file,{active:true});
+          }
         });
         
-        const linkElIcon = listItemEl.createEl('a', {
-          text: ' ->',
-          href: '#',
-          title: 'New tab'
-        });
-        linkElIcon.addEventListener('click', (evt: MouseEvent) => {
-          evt.preventDefault(); // It's good practice to keep this for anchor tags used as buttons
-          // Use a different method to open the file
-          this.app.workspace.getLeaf('tab').openFile(file,{active:true});
-        });
 
       });
     });
