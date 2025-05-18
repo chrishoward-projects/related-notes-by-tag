@@ -40,25 +40,29 @@ export default class RelatedNotesPlugin extends Plugin {
 
     // Event listeners
     this.registerEvent(
-      this.app.workspace.on('active-leaf-change', async () => {
-        if (this.view) {
-          await this.view.updateView();
+      this.app.workspace.on('active-leaf-change', (activeLeaf) => {
+        // Check if our view exists, if an activeLeaf is provided,
+        // if our view's leaf is not the one that just became active,
+        // and if the newly active leaf is a markdown view.
+        if (this.view && activeLeaf && this.view.leaf !== activeLeaf && activeLeaf.view.getViewType() === 'markdown') {
+          // Defer update to allow click event and other UI changes to complete
+          setTimeout(async () => {
+            if (this.view) { // Re-check this.view in case it was closed during the timeout
+              await this.view.updateView();
+            }
+          }, 50); // Increased delay to 50ms
         }
       })
     );
 
     this.registerEvent(
       this.app.metadataCache.on('changed', async (file) => {
-        // Could be more specific here, e.g., check if active file changed
-        // or if tags of any file changed that might be relevant.
-        // For now, a general update if the view is visible.
-        if (this.view && this.app.workspace.getActiveFile() === file) {
+        // Only update if the changed file is the active file and the view is open
+        if (this.view && this.app.workspace.getActiveFile()?.path === file.path) {
           await this.view.updateView();
-        } else if (this.view) {
-            // If a different file's metadata changed, it might become related or stop being related.
-            // This ensures the view refreshes if it's open.
-            await this.view.updateView();
         }
+        // Consider if other files changing should trigger an update if their tags match current note's tags
+        // For now, keeping it simple to reduce excessive updates.
       })
     );
 
