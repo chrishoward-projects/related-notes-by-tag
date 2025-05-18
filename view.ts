@@ -1,0 +1,133 @@
+import { ItemView, WorkspaceLeaf, TFile, getAllTags, Notice } from 'obsidian';
+import RelatedNotesPlugin from './main'; // Adjust if main.ts is named differently
+
+export const RELATED_NOTES_VIEW_TYPE = 'related-notes-view';
+
+export class RelatedNotesView extends ItemView {
+  plugin: RelatedNotesPlugin;
+  private container: HTMLElement;
+
+  constructor(leaf: WorkspaceLeaf, plugin: RelatedNotesPlugin) {
+    super(leaf);
+    this.plugin = plugin;
+  }
+
+  getViewType(): string {
+    return RELATED_NOTES_VIEW_TYPE;
+  }
+
+  getDisplayText(): string {
+    return 'Related Notes';
+  }
+
+  getIcon(): string {
+    return 'tag'; // Obsidian icon name for tags
+  }
+
+  async onOpen() {
+    this.container = this.contentEl; // Use contentEl provided by ItemView
+    this.container.empty();
+    this.container.addClass('related-notes-container');
+    this.container.createEl('h4', { text: this.plugin.settings.customSidebarTitle || 'Related Notes' });
+    // Initial update
+    this.updateView();
+  }
+
+  async onClose() {
+    // Perform any cleanup needed when the view is closed
+    this.container.empty();
+  }
+
+  async updateView() {
+    if (!this.plugin.app.workspace.layoutReady) {
+      return;
+    }
+
+    this.container.empty(); // Clear previous content
+    this.container.addClass('related-notes-container'); // Re-add class if needed
+    this.container.createEl('h4', { text: this.plugin.settings.customSidebarTitle || 'Related Notes' });
+
+    const activeFile = this.app.workspace.getActiveFile();
+    if (!activeFile || !(activeFile instanceof TFile)) {
+      this.container.createEl('p', { text: 'No active note or not a markdown file.' });
+      return;
+    }
+
+    const fileCache = this.app.metadataCache.getFileCache(activeFile);
+    if (!fileCache) {
+      this.container.createEl('p', { text: 'Could not get file cache for the active note.' });
+      return;
+    }
+
+    const currentNoteTags = getAllTags(fileCache);
+    if (!currentNoteTags || currentNoteTags.length === 0) {
+      this.container.createEl('p', { text: 'Active note has no tags.' });
+      return;
+    }
+
+    // For Phase 1, we'll just list tags of the current note.
+    // Actual search for related notes will be more complex.
+    const uniqueCurrentTags = [...new Set(currentNoteTags)]; // Remove duplicates
+
+    const allMarkdownFiles = this.app.vault.getMarkdownFiles();
+    const relatedNotesMap = new Map<string, TFile[]>(); // Tag -> Files
+
+    for (const file of allMarkdownFiles) {
+      if (file.path === activeFile.path) continue; // Skip current file
+
+      const cache = this.app.metadataCache.getFileCache(file);
+      if (cache) {
+        const tagsInFile = getAllTags(cache);
+        if (tagsInFile) {
+          const uniqueTagsInFile = [...new Set(tagsInFile)];
+          for (const tag of uniqueCurrentTags) {
+            if (uniqueTagsInFile.includes(tag)) {
+              if (!relatedNotesMap.has(tag)) {
+                relatedNotesMap.set(tag, []);
+              }
+              relatedNotesMap.get(tag)?.push(file);
+            }
+          }
+        }
+      }
+    }
+
+    if (relatedNotesMap.size === 0) {
+      this.container.createEl('p', { text: 'No other notes found with matching tags.' });
+      return;
+    }
+
+    // Display notes grouped by tag
+    relatedNotesMap.forEach((files, tag) => {
+      const tagGroupEl = this.container.createDiv({ cls: 'related-notes-tag-group collapsed' }); // Add 'collapsed' class
+      const headerEl = tagGroupEl.createEl('div', { text: `Notes with tag: ${tag}`, cls: 'related-notes-tag-group-header' });
+      const listEl = tagGroupEl.createEl('ul', { cls: 'related-notes-list' });
+      listEl.style.display = 'none'; // Hide list by default
+
+      headerEl.addEventListener('click', () => {
+        tagGroupEl.toggleClass('collapsed', !tagGroupEl.hasClass('collapsed'));
+        if (tagGroupEl.hasClass('collapsed')) {
+          listEl.style.display = 'none';
+        } else {
+          listEl.style.display = ''; // Or 'block', depending on default UL styling
+        }
+      });
+
+      // Sort files alphanumerically by basename
+      files.sort((a, b) => a.basename.localeCompare(b.basename));
+
+      files.forEach(file => {
+        const listItemEl = listEl.createEl('li', { cls: 'related-notes-list-item' });
+        const linkEl = listItemEl.createEl('a', {
+          text: file.basename,
+          href: '#',
+        });
+        linkEl.addEventListener('click', (evt: MouseEvent) => {
+          evt.preventDefault(); // It's good practice to keep this for anchor tags used as buttons
+          // Use a different method to open the file
+          this.app.workspace.getLeaf('tab').openFile(file,{active:true});
+        });
+      });
+    });
+  }
+}

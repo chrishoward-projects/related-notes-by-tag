@@ -1,0 +1,68 @@
+/* Styles for Related Notes by Tag Plugin */
+
+.related-notes-container {
+  padding: 10px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.related-notes-container h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: var(--font-ui-small);
+  font-weight: bold;
+}
+
+.related-notes-list {
+  list-style: decimal;
+  padding-left: 15px;
+  margin-bottom: 15px;
+}
+
+.related-notes-list-item {
+  margin-bottom: 5px;
+  font-size: var(--font-ui-smaller);
+}
+
+.related-notes-list-item a {
+  text-decoration: none;
+  color: var(--text-normal);
+}
+
+.related-notes-list-item a:hover {
+  color: var(--text-accent);
+  text-decoration: underline;
+}
+
+.related-notes-tag-group {
+  margin-bottom: 10px;
+}
+
+.related-notes-tag-group-header {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  cursor: pointer; /* Make it look clickable */
+  position: relative; /* For positioning the pseudo-element */
+  padding-left: 15px; /* Space for the indicator */
+}
+
+/* Indicator for collapsed/expanded state */
+.related-notes-tag-group-header::before {
+  content: '▶'; /* Collapsed state: right-pointing triangle */
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8em;
+  transition: transform 0.2s ease-in-out; /* Smooth transition for rotation */
+}
+
+.related-notes-tag-group:not(.collapsed) .related-notes-tag-group-header::before {
+  content: '▼'; /* Expanded state: down-pointing triangle */
+  /* Or use transform: rotate(90deg); if you prefer to rotate the same icon */
+}
+
+/* The list itself is hidden/shown via JS (display: none/block) */
+/* No additional CSS needed for .related-notes-list for collapse/expand functionality */
