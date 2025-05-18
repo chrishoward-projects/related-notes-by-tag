@@ -13,6 +13,13 @@
   font-weight: bold;
 }
 
+.related-activefile-name {
+  font-size:var(--font-ui-small);
+  font-weight:bold;
+  margin-top:0;
+
+}
+
 .related-notes-list {
   list-style: decimal;
   padding-left: 15px;

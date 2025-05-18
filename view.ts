@@ -45,12 +45,16 @@ export class RelatedNotesView extends ItemView {
 
     this.container.empty(); // Clear previous content
     this.container.addClass('related-notes-container'); // Re-add class if needed
-    this.container.createEl('h4', { text: this.plugin.settings.customSidebarTitle || 'Related Notes' });
 
     const activeFile = this.app.workspace.getActiveFile();
+
+    this.container.createEl('h4', { text: this.plugin.settings.customSidebarTitle || 'Related Notes'});
+
     if (!activeFile || !(activeFile instanceof TFile)) {
       this.container.createEl('p', { text: 'No active note or not a markdown file.' });
-      return;
+      return; 
+    } else {
+      this.container.createEl('p', { text: activeFile.basename, cls: 'related-activefile-name' });
     }
 
     const fileCache = this.app.metadataCache.getFileCache(activeFile);
@@ -125,8 +129,20 @@ export class RelatedNotesView extends ItemView {
         linkEl.addEventListener('click', (evt: MouseEvent) => {
           evt.preventDefault(); // It's good practice to keep this for anchor tags used as buttons
           // Use a different method to open the file
+          this.app.workspace.getLeaf().openFile(file,{active:true});
+        });
+        
+        const linkElIcon = listItemEl.createEl('a', {
+          text: ' ->',
+          href: '#',
+          title: 'New tab'
+        });
+        linkElIcon.addEventListener('click', (evt: MouseEvent) => {
+          evt.preventDefault(); // It's good practice to keep this for anchor tags used as buttons
+          // Use a different method to open the file
           this.app.workspace.getLeaf('tab').openFile(file,{active:true});
         });
+
       });
     });
   }
