@@ -6,6 +6,12 @@ export const RELATED_NOTES_VIEW_TYPE = 'related-notes-view';
 export class RelatedNotesView extends ItemView {
   plugin: RelatedNotesPlugin;
   private container: HTMLElement;
+  
+  async handleSortChange(mode: 'name'|'date') {
+    this.plugin.settings.defaultSortMode = mode;
+    await this.plugin.saveSettings();
+    this.updateView();
+  }
 
   constructor(leaf: WorkspaceLeaf, plugin: RelatedNotesPlugin) {
     super(leaf);
@@ -43,12 +49,24 @@ export class RelatedNotesView extends ItemView {
       return;
     }
 
-    this.container.empty(); // Clear previous content
-    this.container.addClass('related-notes-container'); // Re-add class if needed
+    this.container.empty();
+    this.container.addClass('related-notes-container');
+    
+    // Create header with sorting controls
+    const headerEl = this.container.createDiv('related-notes-header');
+    headerEl.createEl('h4', { text: this.plugin.settings.customSidebarTitle || 'Related Notes' });
+    
+    // Sorting controls
+    const sortControls = headerEl.createDiv('sort-controls');
+    ['name', 'date'].forEach(mode => {
+      const button = sortControls.createEl('button', {
+        text: mode.charAt(0).toUpperCase() + mode.slice(1),
+        cls: `sort-button ${this.plugin.settings.defaultSortMode === mode ? 'is-active' : ''}`
+      });
+      button.addEventListener('click', () => this.handleSortChange(mode as 'name'|'date'));
+    });
 
     const activeFile = this.app.workspace.getActiveFile();
-
-    this.container.createEl('h4', { text: this.plugin.settings.customSidebarTitle || 'Related Notes'});
 
     if (!activeFile || !(activeFile instanceof TFile)) {
       this.container.createEl('p', { text: 'No active note or not a markdown file.' });
@@ -71,7 +89,15 @@ export class RelatedNotesView extends ItemView {
 
     // For Phase 1, we'll just list tags of the current note.
     // Actual search for related notes will be more complex.
-    const uniqueCurrentTags = [...new Set(currentNoteTags)]; // Remove duplicates
+    // Process excluded tags
+    const excludedTags = this.plugin.settings.excludedTags
+      .split(',')
+      .map(tag => tag.trim().toLowerCase())
+      .filter(tag => tag.length > 0);
+
+    // Filter out excluded tags and remove duplicates
+    const uniqueCurrentTags = [...new Set(currentNoteTags)]
+      .filter(tag => !excludedTags.includes(tag.toLowerCase()));
 
     const allMarkdownFiles = this.app.vault.getMarkdownFiles();
     const relatedNotesMap = new Map<string, TFile[]>(); // Tag -> Files
@@ -103,10 +129,12 @@ export class RelatedNotesView extends ItemView {
 
     // Display notes grouped by tag
     relatedNotesMap.forEach((files, tag) => {
-      const tagGroupEl = this.container.createDiv({ cls: 'related-notes-tag-group collapsed' }); // Add 'collapsed' class
+      const tagGroupEl = this.container.createDiv({ 
+        cls: `related-notes-tag-group ${this.plugin.settings.defaultGroupState}`
+      });
       const headerEl = tagGroupEl.createEl('div', { text: `Notes with tag: ${tag}`, cls: 'related-notes-tag-group-header' });
       const listEl = tagGroupEl.createEl('ul', { cls: 'related-notes-list' });
-      listEl.style.display = 'none'; // Hide list by default
+      listEl.style.display = this.plugin.settings.defaultGroupState === 'collapsed' ? 'none' : '';
 
       headerEl.addEventListener('click', () => {
         tagGroupEl.toggleClass('collapsed', !tagGroupEl.hasClass('collapsed'));
@@ -117,8 +145,12 @@ export class RelatedNotesView extends ItemView {
         }
       });
 
-      // Sort files alphanumerically by basename
-      files.sort((a, b) => a.basename.localeCompare(b.basename));
+      // Sort files based on current mode
+      if (this.plugin.settings.defaultSortMode === 'date') {
+        files.sort((a, b) => b.stat.mtime - a.stat.mtime); // Newest first
+      } else {
+        files.sort((a, b) => a.basename.localeCompare(b.basename));
+      }
 
       files.forEach(file => {
         const listItemEl = listEl.createEl('li', { cls: 'related-notes-list-item' });

@@ -18,7 +18,7 @@ This plugin is currently in **Phase 1: Core Functionality Development**.
 
 ### Refinement (Phase 2)
 
-- Add sorting and grouping options
+- Add sorting options
 - Implement settings panel
 - Add filtering capabilities
 - Optimize performance for large vaults

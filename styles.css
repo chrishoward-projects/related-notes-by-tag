@@ -71,5 +71,45 @@
   /* Or use transform: rotate(90deg); if you prefer to rotate the same icon */
 }
 
+/* Sorting controls */
+.related-notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sort-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sort-button {
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.sort-button.is-active {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
 /* The list itself is hidden/shown via JS (display: none/block) */
 /* No additional CSS needed for .related-notes-list for collapse/expand functionality */
+
+.related-notes-instructions {
+  background:#f9f9f9;
+  padding:15px;
+  border:1px #eee solid;
+  border-radius: 5px;
+}
+
+.related-notes-instructions p {
+  font-weight:bold;
+}
