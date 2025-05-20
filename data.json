@@ -1,6 +1,6 @@
 {
   "customSidebarTitle": "Related Notes",
   "defaultSortMode": "name",
-  "excludedTags": "#medium,#projects,#writing",
+  "excludedTags": "#medium,#projects,#writing,#thoughts,#project",
   "defaultGroupState": "expanded"
 }

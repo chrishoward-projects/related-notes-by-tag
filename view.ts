@@ -1,5 +1,5 @@
-import { ItemView, WorkspaceLeaf, TFile, getAllTags, Notice } from 'obsidian';
-import RelatedNotesPlugin from './main'; // Adjust if main.ts is named differently
+import { ItemView, WorkspaceLeaf, TFile, getAllTags, Notice, MarkdownRenderer } from 'obsidian';
+import RelatedNotesPlugin from './main';
 
 export const RELATED_NOTES_VIEW_TYPE = 'related-notes-view';
 
@@ -16,7 +16,16 @@ export class RelatedNotesView extends ItemView {
   constructor(leaf: WorkspaceLeaf, plugin: RelatedNotesPlugin) {
     super(leaf);
     this.plugin = plugin;
+    
+    // Track modifier key state and mouse movement
+    document.addEventListener('mousemove', this.trackMousePosition);
+    document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener('keyup', this.handleKeyUp);
   }
+
+  private trackMousePosition = (e: MouseEvent) => {
+    this.lastMousePosition = { x: e.clientX, y: e.clientY };
+  };
 
   getViewType(): string {
     return RELATED_NOTES_VIEW_TYPE;
@@ -40,9 +49,140 @@ export class RelatedNotesView extends ItemView {
   }
 
   async onClose() {
-    // Perform any cleanup needed when the view is closed
+    // Clean up event listeners and popups
+    document.removeEventListener('mousemove', this.trackMousePosition);
+    document.removeEventListener('keydown', this.handleKeyDown);
+    document.removeEventListener('keyup', this.handleKeyUp);
+    this.hidePreview();
     this.container.empty();
   }
+
+  private isModifierHeld = false;
+  private previewPopup: HTMLElement | null = null;
+  private currentPreviewFile: TFile | null = null;
+
+  private lastMousePosition = { x: 0, y: 0 };
+
+  private handleKeyDown = (e: KeyboardEvent) => {
+    this.isModifierHeld = e.metaKey || e.ctrlKey;
+    
+    if (this.isModifierHeld) {
+      // Use last tracked mouse position
+      const hoveredElement = document.elementFromPoint(
+        this.lastMousePosition.x, 
+        this.lastMousePosition.y
+      );
+      const linkEl = hoveredElement?.closest('.related-note-link');
+      
+      if (linkEl instanceof HTMLElement && linkEl.dataset.filePath) {
+        const file = this.app.vault.getAbstractFileByPath(linkEl.dataset.filePath);
+        if (file instanceof TFile) {
+          this.showPreview(file, linkEl);
+        }
+      }
+    }
+  };
+
+  private handleKeyUp = (e: KeyboardEvent) => {
+    this.isModifierHeld = e.metaKey || e.ctrlKey;
+    // Hide preview if modifier released while visible
+    if (!this.isModifierHeld && this.previewPopup) {
+      this.hidePreview();
+    }
+  };
+
+  private showPreview(file: TFile, linkEl: HTMLElement) {
+    this.hidePreview(); // Clear any existing preview
+    
+    // Create the popup in the document body instead of the container
+    // This ensures it's not constrained by the container's layout
+    this.previewPopup = document.body.createDiv('related-notes-preview');
+    this.currentPreviewFile = file;
+    
+    // Simple positioning logic that prioritizes keeping the popup visible
+    const linkRect = linkEl.getBoundingClientRect();
+    const popupWidth = 300; // Slightly smaller width
+    const popupMargin = 10;
+    const viewportWidth = window.innerWidth; // Use window.innerWidth for true viewport width
+    
+    // Debug logging
+    console.log('Link position:', linkRect);
+    console.log('Viewport width:', viewportWidth);
+    
+    // Determine if popup should go left or right of the link
+    let finalLeft: number;
+    
+    // Check if there's room to the right
+    if (linkRect.right + popupWidth + popupMargin <= viewportWidth) {
+      // Position to the right of the link
+      finalLeft = linkRect.right + popupMargin;
+      console.log('Positioning to right:', finalLeft);
+    } 
+    // Check if there's room to the left
+    else if (linkRect.left - popupWidth - popupMargin >= 0) {
+      // Position to the left of the link
+      finalLeft = linkRect.left - popupWidth - popupMargin;
+      console.log('Positioning to left:', finalLeft);
+    } 
+    // Not enough room on either side, center it or position it where most visible
+    else {
+      // Center it in the viewport if possible
+      finalLeft = Math.max(popupMargin, Math.min(
+        (viewportWidth - popupWidth) / 2, 
+        viewportWidth - popupWidth - popupMargin
+      ));
+      console.log('Positioning centered:', finalLeft);
+    }
+    
+    // Vertical positioning
+    let finalTop = linkRect.top;
+    const viewportHeight = window.innerHeight;
+    
+    // Set initial styles
+    this.previewPopup.style.position = 'fixed';
+    this.previewPopup.style.left = `${finalLeft}px`;
+    this.previewPopup.style.top = `${finalTop}px`;
+    this.previewPopup.style.zIndex = '9999';
+    this.previewPopup.style.width = `${popupWidth}px`;
+    this.previewPopup.style.maxHeight = '70vh';
+    this.previewPopup.style.overflowY = 'auto';
+    
+    // Add close on click anywhere
+    document.addEventListener('click', this.hidePreviewOnClick, { once: true });
+    
+    // Render markdown content
+    // Add small delay and verify hover state before rendering
+
+    setTimeout(() => {
+      if (this.previewPopup && this.currentPreviewFile === file && this.isModifierHeld) {
+        MarkdownRenderer.render(
+          this.app,
+          `![[${file.basename}]]`,
+          this.previewPopup,
+          file.path,
+          this
+        ).then(() => {
+          this.previewPopup?.addClass('is-loaded');
+          // Verify mouse is still over element after render
+          if (!linkEl.matches(':hover') || !this.isModifierHeld) {
+         //   this.hidePreview();
+          }
+        });
+      }
+    }, 150);
+  }
+
+  private hidePreview() {
+    if (this.previewPopup) {
+      this.previewPopup.remove();
+      this.previewPopup = null;
+      this.currentPreviewFile = null;
+    }
+  }
+
+  private hidePreviewOnClick = () => {
+    this.hidePreview();
+  };
 
   async updateView() {
     if (!this.plugin.app.workspace.layoutReady) {
@@ -159,8 +299,31 @@ export class RelatedNotesView extends ItemView {
         const linkEl = listItemEl.createEl('a', {
           text: file.basename,
           href: '#',
-          title: 'ctrl/cmd click to open in new tab'
+          title: 'Hold Cmd/Ctrl + hover to preview\nClick to open',
+          cls: 'related-note-link'
         });
+        linkEl.dataset.filePath = file.path;
+        
+        // Hover handlers
+        linkEl.addEventListener('mouseenter', (e: MouseEvent) => {
+          if (e.metaKey || e.ctrlKey || this.isModifierHeld) {
+            this.showPreview(file, linkEl);
+          }
+        });
+        
+        // Removed mousemove handler to prevent positioning conflicts
+
+        // Update preview when modifier is pressed while hovering
+        linkEl.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && linkEl.matches(':hover')) {
+            this.showPreview(file, linkEl);
+          }
+        });
+        
+        // linkEl.addEventListener('mouseleave', () => {
+        //   //this.hidePreview();
+        // });
+        
         linkEl.addEventListener('click', (evt: MouseEvent) => {
           evt.preventDefault(); // It's good practice to keep this for anchor tags used as buttons
           // Use a different method to open the file

@@ -113,3 +113,34 @@
 .related-notes-instructions p {
   font-weight:bold;
 }
+
+/* Preview Popup Styles */
+.related-notes-preview {
+  position: fixed; /* Use fixed to position relative to viewport */
+  z-index: 9999; /* Ensure it's on top */
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  overflow-x: hidden; /* Prevent horizontal stretching */
+  width: 300px; /* Fixed width to match JS */
+  max-width: 300px; /* Ensure it's not too wide */
+}
+
+.related-notes-preview.is-loaded {
+  opacity: 1;
+}
+
+/* Styling for content within the preview, if needed */
+.related-notes-preview .markdown-preview-view {
+  padding: 0; /* Remove default padding if MarkdownRenderer adds it */
+  font-size: var(--font-text-size); /* Match editor font size */
+}
+
+.related-notes-preview .markdown-preview-view .markdown-preview-sizer {
+  min-height: auto; /* Allow content to define height */
+}
