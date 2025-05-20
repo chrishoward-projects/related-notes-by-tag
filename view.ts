@@ -101,7 +101,7 @@ export class RelatedNotesView extends ItemView {
     
     // Simple positioning logic that prioritizes keeping the popup visible
     const linkRect = linkEl.getBoundingClientRect();
-    const popupWidth = 300; // Slightly smaller width
+    const popupWidth = 400; // Slightly smaller width
     const popupMargin = 10;
     const viewportWidth = window.innerWidth; // Use window.innerWidth for true viewport width
     
@@ -144,7 +144,7 @@ export class RelatedNotesView extends ItemView {
     this.previewPopup.style.top = `${finalTop}px`;
     this.previewPopup.style.zIndex = '9999';
     this.previewPopup.style.width = `${popupWidth}px`;
-    this.previewPopup.style.maxHeight = '70vh';
+    this.previewPopup.style.maxHeight = '40hv';
     this.previewPopup.style.overflowY = 'auto';
     
     // Add close on click anywhere
@@ -323,7 +323,7 @@ export class RelatedNotesView extends ItemView {
         // linkEl.addEventListener('mouseleave', () => {
         //   //this.hidePreview();
         // });
-        
+
         linkEl.addEventListener('click', (evt: MouseEvent) => {
           evt.preventDefault(); // It's good practice to keep this for anchor tags used as buttons
           // Use a different method to open the file

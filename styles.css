@@ -127,8 +127,9 @@
   transition: opacity 0.1s ease-in-out;
   box-sizing: border-box; /* Include padding and border in the element's total width and height */
   overflow-x: hidden; /* Prevent horizontal stretching */
-  width: 300px; /* Fixed width to match JS */
-  max-width: 300px; /* Ensure it's not too wide */
+  width: 400px; /* Fixed width to match JS */
+  max-width: 400px; /* Ensure it's not too wide */
+  max-height: 500px;
 }
 
 .related-notes-preview.is-loaded {
