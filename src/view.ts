@@ -6,9 +6,16 @@ export const RELATED_NOTES_VIEW_TYPE = 'related-notes-view';
 export class RelatedNotesView extends ItemView {
   plugin: RelatedNotesPlugin;
   private container: HTMLElement;
+  private selectedTagCount: number = 1;
   
-  async handleSortChange(mode: 'name'|'date') {
+  async handleSortChange(mode: 'name'|'date'|'created') {
     this.plugin.settings.defaultSortMode = mode;
+    await this.plugin.saveSettings();
+    this.updateView();
+  }
+
+  async handleFilterChange(filterMode: 1|2|3) {
+    this.plugin.settings.defaultFilterMode = filterMode;
     await this.plugin.saveSettings();
     this.updateView();
   }
@@ -105,9 +112,6 @@ export class RelatedNotesView extends ItemView {
     const popupMargin = 10;
     const viewportWidth = window.innerWidth; // Use window.innerWidth for true viewport width
     
-    // Debug logging
-    console.log('Link position:', linkRect);
-    console.log('Viewport width:', viewportWidth);
     
     // Determine if popup should go left or right of the link
     let finalLeft: number;
@@ -116,14 +120,14 @@ export class RelatedNotesView extends ItemView {
     if (linkRect.right + popupWidth + popupMargin <= viewportWidth) {
       // Position to the right of the link
       finalLeft = linkRect.right + popupMargin;
-      console.log('Positioning to right:', finalLeft);
     } 
+
     // Check if there's room to the left
     else if (linkRect.left - popupWidth - popupMargin >= 0) {
       // Position to the left of the link
       finalLeft = linkRect.left - popupWidth - popupMargin;
-      console.log('Positioning to left:', finalLeft);
     } 
+    
     // Not enough room on either side, center it or position it where most visible
     else {
       // Center it in the viewport if possible
@@ -131,7 +135,6 @@ export class RelatedNotesView extends ItemView {
         (viewportWidth - popupWidth) / 2, 
         viewportWidth - popupWidth - popupMargin
       ));
-      console.log('Positioning centered:', finalLeft);
     }
     
     // Vertical positioning
@@ -194,16 +197,63 @@ export class RelatedNotesView extends ItemView {
     
     // Create header with sorting controls
     const headerEl = this.container.createDiv('related-notes-header');
-    headerEl.createEl('h4', { text: this.plugin.settings.customSidebarTitle || 'Related Notes' });
+    headerEl.createEl('h4', { text: this.plugin.settings.customSidebarTitle || 'Related Notes',cls:'related-notes-title' });
     
     // Sorting controls
-    const sortControls = headerEl.createDiv('sort-controls');
-    ['name', 'date'].forEach(mode => {
-      const button = sortControls.createEl('button', {
-        text: mode.charAt(0).toUpperCase() + mode.slice(1),
-        cls: `sort-button ${this.plugin.settings.defaultSortMode === mode ? 'is-active' : ''}`
+    const actionButtons = headerEl.createDiv('action-buttons')
+    const sortControls = actionButtons.createDiv('sort-controls');
+    const sortDropdown = sortControls.createDiv('dropdown-container');
+    const sortTrigger = sortDropdown.createEl('button', {
+      cls: 'dropdown-trigger'
+    });
+    sortTrigger.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M3 6h18M6 12h12M10 18h4"/></svg>';
+    
+    const sortMenu = sortDropdown.createDiv('dropdown-menu');
+    ['name', 'date', 'created'].forEach(mode => {
+      const item = sortMenu.createEl('div', {
+        cls: `dropdown-item ${this.plugin.settings.defaultSortMode === mode ? 'is-active' : ''}`,
+        text: mode === 'date' ? 'Modified Date' : mode === 'created' ? 'Created Date' : 'Name'
       });
-      button.addEventListener('click', () => this.handleSortChange(mode as 'name'|'date'));
+      item.addEventListener('click', () => {
+        this.handleSortChange(mode as 'name'|'date'|'created');
+        sortMenu.classList.remove('is-visible');
+        // Update active states for items
+        sortMenu.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('is-active'));
+        item.classList.add('is-active');
+      });
+    });
+    
+    sortTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sortMenu.classList.toggle('is-visible');
+    });
+
+    // Filter controls
+    const filterControls = actionButtons.createDiv('filter-controls');
+    const filterDropdown = filterControls.createDiv('dropdown-container');
+    const filterTrigger = filterDropdown.createEl('button', {
+      cls: 'dropdown-trigger'
+    });
+    filterTrigger.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>'; // Filter icon
+
+    const filterMenu = filterDropdown.createDiv('dropdown-menu');
+    [1, 2, 3 ].forEach(filterMode => {
+      const item = filterMenu.createEl('div', {
+        cls: `dropdown-item ${this.plugin.settings.defaultFilterMode === filterMode ? 'is-active' : ''}`,
+        text: filterMode === 2 ? 'Match at least 2 tags' : filterMode === 3 ? 'Match at least 3 tags' : 'Match at least 1 tags'
+      });
+      item.addEventListener('click', () => {
+        this.handleFilterChange(filterMode as 1|2|3);
+        filterMenu.classList.remove('is-visible');
+        // Update active states for items
+        filterMenu.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('is-active'));
+        item.classList.add('is-active');
+      });
+    });
+
+    filterTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      filterMenu.classList.toggle('is-visible');
     });
 
     const activeFile = this.app.workspace.getActiveFile();
@@ -250,13 +300,25 @@ export class RelatedNotesView extends ItemView {
         const tagsInFile = getAllTags(cache);
         if (tagsInFile) {
           const uniqueTagsInFile = [...new Set(tagsInFile)];
-          for (const tag of uniqueCurrentTags) {
-            if (uniqueTagsInFile.includes(tag)) {
+
+          // Calculate overlapping tags between current note and this file
+          const overlappingTags = uniqueCurrentTags.filter(tag => 
+            uniqueTagsInFile.includes(tag)
+          );
+          if (overlappingTags.length>0) {
+          // console.log('uniqueTagsInFile:',uniqueTagsInFile)
+          // console.log('uniqueCurrentTags:',uniqueCurrentTags)
+          console.log('overlappingTags:',overlappingTags)
+        //  overlappingTags.length
+          }
+          
+          if (overlappingTags.length >= this.selectedTagCount) {
+            overlappingTags.forEach(tag => {
               if (!relatedNotesMap.has(tag)) {
                 relatedNotesMap.set(tag, []);
               }
               relatedNotesMap.get(tag)?.push(file);
-            }
+            });
           }
         }
       }
@@ -287,7 +349,9 @@ export class RelatedNotesView extends ItemView {
 
       // Sort files based on current mode
       if (this.plugin.settings.defaultSortMode === 'date') {
-        files.sort((a, b) => b.stat.mtime - a.stat.mtime); // Newest first
+        files.sort((a, b) => b.stat.mtime - a.stat.mtime);
+      } else if (this.plugin.settings.defaultSortMode === 'created') {
+        files.sort((a, b) => b.stat.ctime - a.stat.ctime);
       } else {
         files.sort((a, b) => a.basename.localeCompare(b.basename));
       }
@@ -336,6 +400,7 @@ export class RelatedNotesView extends ItemView {
         
 
       });
+      const lineSeparator = tagGroupEl.createEl('hr',{cls:'related-notes-separator'});
     });
   }
 }

@@ -3,7 +3,8 @@ import RelatedNotesPlugin from './main';
 
 export interface RelatedNotesSettings {
   customSidebarTitle: string;
-  defaultSortMode: 'name'|'date';
+  defaultSortMode: 'name'|'date'|'created';
+  defaultFilterMode: 1 | 2 | 3;
   excludedTags: string;
   defaultGroupState: 'collapsed'|'expanded';
 }
@@ -11,6 +12,7 @@ export interface RelatedNotesSettings {
 export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   customSidebarTitle: 'Related Notes',
   defaultSortMode: 'name',
+  defaultFilterMode: 1,
   excludedTags: '',
   defaultGroupState: 'collapsed',
 };
@@ -27,6 +29,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     const { containerEl } = this;
 
     containerEl.empty();
+    containerEl.createEl('h2',{text:'Related notes by tag'});
 
     new Setting(containerEl)
       .setName('Custom sidebar title')
@@ -45,6 +48,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       .addDropdown(dropdown => dropdown
         .addOption('name', 'Name')
         .addOption('date', 'Date Edited')
+        .addOption('created', 'Date Created')
         .setValue(this.plugin.settings.defaultSortMode)
         .onChange(async (value: 'name' | 'date') => {
           this.plugin.settings.defaultSortMode = value;

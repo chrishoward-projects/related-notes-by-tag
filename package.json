@@ -1,6 +1,6 @@
 {
   "name": "related-notes-by-tag",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Displays related notes in the sidebar based on shared tags with the active note.",
   "main": "main.js",
   "scripts": {

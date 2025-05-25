@@ -69,18 +69,18 @@ export default class RelatedNotesPlugin extends Plugin {
     // Activate the view if a file is already open
     this.app.workspace.onLayoutReady(async () => {
         const activeFile = this.app.workspace.getActiveFile();
-        if (activeFile) {
-            // Check if view is already open to avoid opening multiple
-            let leaf = this.app.workspace.getLeavesOfType(RELATED_NOTES_VIEW_TYPE)[0];
-            if (leaf) {
-                this.app.workspace.revealLeaf(leaf);
-                if (this.view) {
-                    await this.view.updateView();
-                }
-            }
-            // If not open, and user wants it to open by default, or based on a setting.
-            // For now, we don't auto-open it, user uses ribbon/command.
-        }
+        // if (activeFile) {
+        //     // Check if view is already open to avoid opening multiple
+        //     let leaf = this.app.workspace.getLeavesOfType(RELATED_NOTES_VIEW_TYPE)[0];
+        //     if (leaf) {
+        //         this.app.workspace.revealLeaf(leaf);
+        //         if (this.view) {
+        //             await this.view.updateView();
+        //         }
+        //     }
+        //     // If not open, and user wants it to open by default, or based on a setting.
+        //     // For now, we don't auto-open it, user uses ribbon/command.
+        // }
     });
 
     console.log('Related Notes by Tag plugin loaded.');
