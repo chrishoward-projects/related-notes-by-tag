@@ -1,5 +1,7 @@
 # Related Notes by Tag - Obsidian Plugin
 
+A productivity tool for Obsidian users who want to easily discover related content in their knowledge base through tag-based connections.
+
 Displays a list of notes in the right sidebar that contain the same tags as the currently active note, effectively showing "related notes by tag."
 
 ## Current Status
