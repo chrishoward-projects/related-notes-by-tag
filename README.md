@@ -6,11 +6,11 @@ Displays a list of notes in the right sidebar that contain the same tags as the 
 
 ## Current Status
 
-This plugin is currently in **Phase 1: Core Functionality Development**.
+This plugin is currently in **Phase 3: Polish**.
 
 ## Planned Features (from Project Plan)
 
-### Core Functionality (Phase 1 - In Progress)
+### Core Functionality (Phase 1)
 
 - Monitor the currently active note in the editor
 - Extract all tags from the current note
@@ -25,7 +25,7 @@ This plugin is currently in **Phase 1: Core Functionality Development**.
 - Add filtering capabilities
 - Optimize performance for large vaults
 
-### Polish (Phase 3)
+### Polish (Phase 3 - In Progress)
 
 - Improve UI with better formatting and icons
 - Add animations/transitions for a smoother experience
