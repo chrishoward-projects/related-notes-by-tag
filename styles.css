@@ -57,18 +57,18 @@
 
 /* Indicator for collapsed/expanded state */
 .related-notes-tag-group-header::before {
-  content: '▶'; /* Collapsed state: right-pointing triangle */
+  content: '›'; /* Collapsed state: simple right caret */
   position: absolute;
   left: 0;
   top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.8em;
+  transform: translateY(-50%) translateY(-2px);
+  font-size: 1.5em;
+  font-weight: normal;
   transition: transform 0.2s ease-in-out; /* Smooth transition for rotation */
 }
 
 .related-notes-tag-group:not(.collapsed) .related-notes-tag-group-header::before {
-  content: '▼'; /* Expanded state: down-pointing triangle */
-  /* Or use transform: rotate(90deg); if you prefer to rotate the same icon */
+  transform: translateY(-50%) translateY(-2px) translateX(1px) rotate(90deg); /* Expanded state: rotated caret pointing down with slight offset */
 }
 
 /* Sorting controls */

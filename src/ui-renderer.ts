@@ -65,7 +65,7 @@ export class UIRenderer {
     ];
 
     return this.createDropdown(container, {
-      icon: ICONS.DROPDOWN_CARET,
+      icon: ICONS.SORT,
       options,
       onItemClick: (value) => onSortChange(value as 'name' | 'date' | 'created'),
       containerClass: CSS_CLASSES.SORT_CONTROLS
@@ -84,7 +84,7 @@ export class UIRenderer {
     ];
 
     return this.createDropdown(container, {
-      icon: ICONS.DROPDOWN_CARET,
+      icon: ICONS.FILTER,
       options,
       onItemClick: (value) => onFilterChange(value as 1 | 2 | 3),
       containerClass: CSS_CLASSES.FILTER_CONTROLS
