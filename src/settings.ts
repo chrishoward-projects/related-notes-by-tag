@@ -50,7 +50,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
         .addOption('date', 'Date Edited')
         .addOption('created', 'Date Created')
         .setValue(this.plugin.settings.defaultSortMode)
-        .onChange(async (value: 'name' | 'date') => {
+        .onChange(async (value: 'name' | 'date' | 'created') => {
           this.plugin.settings.defaultSortMode = value;
           await this.plugin.saveSettings();
         }));

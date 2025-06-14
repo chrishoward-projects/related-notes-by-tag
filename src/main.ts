@@ -1,6 +1,7 @@
 import { Plugin, WorkspaceLeaf, TFile, Notice, addIcon } from 'obsidian';
 import { RelatedNotesSettings, DEFAULT_SETTINGS, RelatedNotesSettingTab } from './settings';
 import { RelatedNotesView, RELATED_NOTES_VIEW_TYPE } from './view';
+import { ICONS, TIMEOUTS } from './constants';
 
 export default class RelatedNotesPlugin extends Plugin {
   settings: RelatedNotesSettings;
@@ -21,7 +22,7 @@ export default class RelatedNotesPlugin extends Plugin {
     );
 
     // Add a ribbon icon to activate the view
-    addIcon('related-notes-icon', `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tags"><path d="M9 5H2v7l6.29 6.29c.94.94 2.48.94 3.42 0l3.58-3.58c.94-.94.94-2.48 0-3.42L9 5Z"/><path d="M6 9.01V9"/><path d="m15 5 6.3 6.3a2.69 2.69 0 0 1 0 3.79L17.5 19a2.69 2.69 0 0 1-3.79 0L10 15.21"/></svg>`);
+    addIcon('related-notes-icon', ICONS.RELATED_NOTES);
     this.addRibbonIcon('related-notes-icon', 'Open Related Notes Panel', () => {
       this.activateView();
     });
@@ -50,7 +51,7 @@ export default class RelatedNotesPlugin extends Plugin {
             if (this.view) { // Re-check this.view in case it was closed during the timeout
               await this.view.updateView();
             }
-          }, 50); // Increased delay to 50ms
+          }, TIMEOUTS.VIEW_UPDATE_DELAY);
         }
       })
     );
@@ -61,26 +62,14 @@ export default class RelatedNotesPlugin extends Plugin {
         if (this.view && this.app.workspace.getActiveFile()?.path === file.path) {
           await this.view.updateView();
         }
-        // Consider if other files changing should trigger an update if their tags match current note's tags
-        // For now, keeping it simple to reduce excessive updates.
+        // Only update for active file changes to reduce excessive updates
       })
     );
 
-    // Activate the view if a file is already open
-    this.app.workspace.onLayoutReady(async () => {
-        const activeFile = this.app.workspace.getActiveFile();
-        // if (activeFile) {
-        //     // Check if view is already open to avoid opening multiple
-        //     let leaf = this.app.workspace.getLeavesOfType(RELATED_NOTES_VIEW_TYPE)[0];
-        //     if (leaf) {
-        //         this.app.workspace.revealLeaf(leaf);
-        //         if (this.view) {
-        //             await this.view.updateView();
-        //         }
-        //     }
-        //     // If not open, and user wants it to open by default, or based on a setting.
-        //     // For now, we don't auto-open it, user uses ribbon/command.
-        // }
+    // Layout ready handler
+    this.app.workspace.onLayoutReady(() => {
+      // Currently no auto-open functionality
+      // Users activate via ribbon icon or command
     });
 
     console.log('Related Notes by Tag plugin loaded.');
