@@ -21,7 +21,7 @@ export class UIRenderer {
     }
     
     const trigger = dropdownContainer.createEl('button', {
-      cls: CSS_CLASSES.DROPDOWN_TRIGGER
+      cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} clickable-icon`
     });
     trigger.innerHTML = config.icon;
     
@@ -110,7 +110,7 @@ export class UIRenderer {
     onToggle: (showTags: boolean) => void
   ): HTMLElement {
     const toggleButton = container.createEl('button', {
-      cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} ${CSS_CLASSES.TAGS_TOGGLE_CONTROLS} ${isActive ? CSS_CLASSES.DROPDOWN_ITEM_ACTIVE : ''}`,
+      cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} ${CSS_CLASSES.TAGS_TOGGLE_CONTROLS} clickable-icon ${isActive ? CSS_CLASSES.DROPDOWN_ITEM_ACTIVE : ''}`,
       title: isActive ? 'Hide matched tags' : 'Show matched tags'
     });
     
