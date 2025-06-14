@@ -4,5 +4,5 @@
   "defaultFilterMode": 1,
   "excludedTags": "#medium,#projects,#writing,#thoughts,#project",
   "defaultGroupState": "expanded",
-  "showMatchedTags": true
+  "showMatchedTags": false
 }

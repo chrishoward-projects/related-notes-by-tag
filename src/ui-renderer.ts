@@ -91,12 +91,8 @@ export class UIRenderer {
     });
   }
 
-  createHeader(container: HTMLElement, title: string): HTMLElement {
+  createHeader(container: HTMLElement): HTMLElement {
     const headerEl = container.createDiv(CSS_CLASSES.HEADER);
-    headerEl.createEl('h4', { 
-      text: title, 
-      cls: CSS_CLASSES.TITLE 
-    });
     return headerEl;
   }
 

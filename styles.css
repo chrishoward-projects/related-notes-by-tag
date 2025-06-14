@@ -104,7 +104,7 @@
   border: none;
   padding: 4px;
   cursor: pointer;
-  color: var(--text-normal);
+  color: var(--icon-color);
 }
 
 .dropdown-trigger:hover {

@@ -94,10 +94,7 @@ export class RelatedNotesView extends ItemView {
   }
 
   private renderHeader(): HTMLElement {
-    const headerEl = this.uiRenderer.createHeader(
-      this.container, 
-      this.plugin.settings.customSidebarTitle || 'Related Notes'
-    );
+    const headerEl = this.uiRenderer.createHeader(this.container);
     return headerEl;
   }
 
@@ -130,11 +127,6 @@ export class RelatedNotesView extends ItemView {
       this.container.createEl('p', { text: 'No active note or not a markdown file.' });
       return null;
     }
-    
-    this.container.createEl('p', { 
-      text: activeFile.basename, 
-      cls: CSS_CLASSES.ACTIVE_FILE_NAME 
-    });
     
     return activeFile;
   }
