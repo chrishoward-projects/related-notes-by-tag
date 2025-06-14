@@ -11,7 +11,7 @@ export interface RelatedNotesSettings {
 }
 
 export const DEFAULT_SETTINGS: RelatedNotesSettings = {
-  customSidebarTitle: 'Related Notes',
+  customSidebarTitle: 'Related Notes By Tag',
   defaultSortMode: 'name',
   defaultFilterMode: 1,
   excludedTags: '',

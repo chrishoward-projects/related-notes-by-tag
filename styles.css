@@ -204,13 +204,16 @@
 
 .matched-tag {
   display: inline-block;
-  background-color: var(--background-modifier-border);
-  color: var(--text-muted);
+  background-color: var(--tag-background);
+  color: var(--tag-color);
   font-size: var(--font-ui-smaller);
   padding: 2px 6px;
   margin-right: 4px;
   margin-bottom: 2px;
-  border-radius: 3px;
+  border-radius: var(--tag-radius);
+  border-color:var(--pill-border-color);
+  border-style:solid;
+  border-width: 1px;
   font-weight: normal;
 }
 

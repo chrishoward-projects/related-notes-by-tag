@@ -3,5 +3,6 @@
   "defaultSortMode": "name",
   "defaultFilterMode": 1,
   "excludedTags": "#medium,#projects,#writing,#thoughts,#project",
-  "defaultGroupState": "expanded"
+  "defaultGroupState": "expanded",
+  "showMatchedTags": true
 }
