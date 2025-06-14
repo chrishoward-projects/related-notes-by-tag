@@ -1,8 +1,13 @@
 import { TFile, getAllTags, App } from 'obsidian';
 import { RelatedNotesSettings } from './settings';
 
+export interface FileWithMatchedTags {
+  file: TFile;
+  matchedTags: string[];
+}
+
 export interface TagAnalysisResult {
-  relatedNotesMap: Map<string, TFile[]>;
+  relatedNotesMap: Map<string, FileWithMatchedTags[]>;
   currentNoteTags: string[];
 }
 
@@ -39,8 +44,8 @@ export class TagAnalyzer {
       .filter(tag => !excludedTags.includes(tag.toLowerCase()));
   }
 
-  private findRelatedNotes(activeFile: TFile, currentTags: string[], minTagMatches: number): Map<string, TFile[]> {
-    const relatedNotesMap = new Map<string, TFile[]>();
+  private findRelatedNotes(activeFile: TFile, currentTags: string[], minTagMatches: number): Map<string, FileWithMatchedTags[]> {
+    const relatedNotesMap = new Map<string, FileWithMatchedTags[]>();
     const allMarkdownFiles = this.app.vault.getMarkdownFiles();
 
     for (const file of allMarkdownFiles) {
@@ -49,11 +54,16 @@ export class TagAnalyzer {
       const overlappingTags = this.getOverlappingTags(file, currentTags);
       
       if (overlappingTags.length >= minTagMatches) {
+        const fileWithTags: FileWithMatchedTags = {
+          file,
+          matchedTags: overlappingTags
+        };
+        
         overlappingTags.forEach(tag => {
           if (!relatedNotesMap.has(tag)) {
             relatedNotesMap.set(tag, []);
           }
-          relatedNotesMap.get(tag)?.push(file);
+          relatedNotesMap.get(tag)?.push(fileWithTags);
         });
       }
     }
@@ -72,16 +82,16 @@ export class TagAnalyzer {
     return currentTags.filter(tag => uniqueTagsInFile.includes(tag));
   }
 
-  sortFiles(files: TFile[], sortMode: 'name' | 'date' | 'created'): TFile[] {
+  sortFiles(files: FileWithMatchedTags[], sortMode: 'name' | 'date' | 'created'): FileWithMatchedTags[] {
     const sortedFiles = [...files];
     
     switch (sortMode) {
       case 'date':
-        return sortedFiles.sort((a, b) => b.stat.mtime - a.stat.mtime);
+        return sortedFiles.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
       case 'created':
-        return sortedFiles.sort((a, b) => b.stat.ctime - a.stat.ctime);
+        return sortedFiles.sort((a, b) => b.file.stat.ctime - a.file.stat.ctime);
       default:
-        return sortedFiles.sort((a, b) => a.basename.localeCompare(b.basename));
+        return sortedFiles.sort((a, b) => a.file.basename.localeCompare(b.file.basename));
     }
   }
 }

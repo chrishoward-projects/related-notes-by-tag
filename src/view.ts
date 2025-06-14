@@ -1,6 +1,6 @@
 import { ItemView, WorkspaceLeaf, TFile, Notice } from 'obsidian';
 import RelatedNotesPlugin from './main';
-import { TagAnalyzer } from './tag-analyzer';
+import { TagAnalyzer, FileWithMatchedTags } from './tag-analyzer';
 import { PreviewManager } from './preview-manager';
 import { UIRenderer } from './ui-renderer';
 import { CSS_CLASSES } from './constants';
@@ -22,6 +22,12 @@ export class RelatedNotesView extends ItemView {
 
   async handleFilterChange(filterMode: 1|2|3) {
     this.plugin.settings.defaultFilterMode = filterMode;
+    await this.plugin.saveSettings();
+    this.updateView();
+  }
+
+  async handleTagsToggle(showTags: boolean) {
+    this.plugin.settings.showMatchedTags = showTags;
     await this.plugin.saveSettings();
     this.updateView();
   }
@@ -109,6 +115,12 @@ export class RelatedNotesView extends ItemView {
       this.plugin.settings.defaultFilterMode,
       (mode) => this.handleFilterChange(mode)
     );
+    
+    this.uiRenderer.createTagsToggleButton(
+      actionButtons,
+      this.plugin.settings.showMatchedTags,
+      (showTags) => this.handleTagsToggle(showTags)
+    );
   }
 
   private getActiveFile(): TFile | null {
@@ -127,7 +139,7 @@ export class RelatedNotesView extends ItemView {
     return activeFile;
   }
 
-  private renderTagGroups(relatedNotesMap: Map<string, TFile[]>): void {
+  private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>): void {
     relatedNotesMap.forEach((files, tag) => {
       const tagGroupEl = this.container.createDiv({ 
         cls: `${CSS_CLASSES.TAG_GROUP} ${this.plugin.settings.defaultGroupState}`
@@ -157,11 +169,16 @@ export class RelatedNotesView extends ItemView {
     });
   }
 
-  private renderFileList(listEl: HTMLElement, files: TFile[]): void {
-    files.forEach(file => {
+  private renderFileList(listEl: HTMLElement, files: FileWithMatchedTags[]): void {
+    files.forEach(fileWithTags => {
       const listItemEl = listEl.createEl('li', { cls: CSS_CLASSES.LIST_ITEM });
-      const linkEl = this.createFileLink(listItemEl, file);
-      this.setupFileLinkEvents(linkEl, file);
+      const linkEl = this.createFileLink(listItemEl, fileWithTags.file);
+      this.setupFileLinkEvents(linkEl, fileWithTags.file);
+      
+      // Add matched tags if the setting is enabled
+      if (this.plugin.settings.showMatchedTags) {
+        this.renderMatchedTags(listItemEl, fileWithTags.matchedTags);
+      }
     });
   }
 
@@ -196,6 +213,17 @@ export class RelatedNotesView extends ItemView {
       } else {
         this.app.workspace.getLeaf().openFile(file, { active: true });
       }
+    });
+  }
+
+  private renderMatchedTags(container: HTMLElement, matchedTags: string[]): void {
+    const tagsContainer = container.createDiv(CSS_CLASSES.MATCHED_TAGS);
+    
+    matchedTags.forEach(tag => {
+      tagsContainer.createSpan({
+        text: tag,
+        cls: CSS_CLASSES.MATCHED_TAG
+      });
     });
   }
 }

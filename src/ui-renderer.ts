@@ -103,4 +103,34 @@ export class UIRenderer {
   createActionButtonsContainer(headerEl: HTMLElement): HTMLElement {
     return headerEl.createDiv(CSS_CLASSES.ACTION_BUTTONS);
   }
+
+  createTagsToggleButton(
+    container: HTMLElement, 
+    isActive: boolean, 
+    onToggle: (showTags: boolean) => void
+  ): HTMLElement {
+    const toggleButton = container.createEl('button', {
+      cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} ${CSS_CLASSES.TAGS_TOGGLE_CONTROLS} ${isActive ? CSS_CLASSES.DROPDOWN_ITEM_ACTIVE : ''}`,
+      title: isActive ? 'Hide matched tags' : 'Show matched tags'
+    });
+    
+    toggleButton.innerHTML = ICONS.TAGS_TOGGLE;
+    
+    toggleButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const newState = !isActive;
+      onToggle(newState);
+      
+      // Update button appearance
+      if (newState) {
+        toggleButton.addClass(CSS_CLASSES.DROPDOWN_ITEM_ACTIVE);
+        toggleButton.title = 'Hide matched tags';
+      } else {
+        toggleButton.removeClass(CSS_CLASSES.DROPDOWN_ITEM_ACTIVE);
+        toggleButton.title = 'Show matched tags';
+      }
+    });
+    
+    return toggleButton;
+  }
 }

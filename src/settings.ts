@@ -7,6 +7,7 @@ export interface RelatedNotesSettings {
   defaultFilterMode: 1 | 2 | 3;
   excludedTags: string;
   defaultGroupState: 'collapsed'|'expanded';
+  showMatchedTags: boolean;
 }
 
 export const DEFAULT_SETTINGS: RelatedNotesSettings = {
@@ -15,6 +16,7 @@ export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   defaultFilterMode: 1,
   excludedTags: '',
   defaultGroupState: 'collapsed',
+  showMatchedTags: false,
 };
 
 export class RelatedNotesSettingTab extends PluginSettingTab {

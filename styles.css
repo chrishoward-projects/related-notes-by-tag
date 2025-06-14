@@ -195,3 +195,31 @@
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
+
+/* Matched tags styles */
+.matched-tags {
+  margin-top: 4px;
+  margin-left: 0;
+}
+
+.matched-tag {
+  display: inline-block;
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  padding: 2px 6px;
+  margin-right: 4px;
+  margin-bottom: 2px;
+  border-radius: 3px;
+  font-weight: normal;
+}
+
+/* Tags toggle button styles */
+.tags-toggle-controls {
+  margin-left: 4px;
+}
+
+.tags-toggle-controls.is-active {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-accent);
+}
