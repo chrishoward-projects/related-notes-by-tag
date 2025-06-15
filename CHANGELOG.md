@@ -5,7 +5,17 @@ All notable changes to the Related Notes by Tag plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2025-01-XX
+## [0.2.2] - 2025-06-16
+
+### Fixed
+- **Code Cleanup**: Removed remnant code from header content including unused constants, CSS, and settings
+
+## [0.2.1] - 2025-06-16
+
+### Fixed
+- **Dropdown Behavior**: Fixed issue where multiple dropdowns could be open simultaneously
+
+## [0.2.0] - 2025-06-16
 
 ### Added
 - **Matched Tags Toggle**: New button to show/hide which specific tags match between notes
@@ -13,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Filter Controls**: Dropdown to set minimum tag match requirements (1, 2, or 3+ tags)
 - **Expand/Collapse**: Clickable tag group headers to expand/collapse note lists
 - **Preview Support**: Hover with Cmd/Ctrl to preview note content
-- **Settings Panel**: Comprehensive settings with custom title, sort mode, excluded tags, and group state
+- **Settings Panel**: Comprehensive settings with sort mode, excluded tags, and group state
 - **GitHub Actions**: Automated release workflow for streamlined publishing
 - **Mobile Support**: Plugin works on both desktop and mobile devices
 
@@ -27,9 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Memory Management**: Proper cleanup of event listeners and DOM elements
 - **Type Safety**: Comprehensive TypeScript typing throughout the codebase
 - **UI Consistency**: Aligned with Obsidian's standard component styling and behavior
-- **Dropdown Behavior**: Fixed issue where multiple dropdowns could be open simultaneously
 
-## [0.1.14] - 2025-01-XX
+## [0.1.14] - 2025-06-15
 
 ### Added
 - **Core Functionality**: Basic related notes discovery based on shared tags
