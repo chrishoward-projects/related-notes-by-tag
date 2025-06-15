@@ -3,8 +3,8 @@
   "name": "Related Notes by Tag",
   "version": "0.2.0",
   "minAppVersion": "0.15.0",
-  "description": "Displays related notes in the sidebar based on shared tags with the active note.",
+  "description": "Displays list of notes in the sidebar that share tags with the currently active note.",
   "author": "Chris Howard",
-  "authorUrl": "https://341design.com.au",
+  "authorUrl": "https://github.com/chrishoward-projects",
   "isDesktopOnly": false
 }

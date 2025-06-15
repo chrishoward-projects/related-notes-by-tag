@@ -1,7 +1,7 @@
 {
   "name": "related-notes-by-tag",
   "version": "0.2.0",
-  "description": "Displays related notes in the sidebar based on shared tags with the active note.",
+  "description": "Displays list of notes in the sidebar that share tags with the currently active note.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
@@ -13,7 +13,8 @@
   "keywords": [
     "obsidian",
     "obsidian-md",
-    "obsidian-plugin"
+    "obsidian-plugin",
+    "tags"
   ],
   "author": "Chris Howard",
   "license": "MIT",
