@@ -46,7 +46,7 @@
 }
 
 .related-notes-tag-group-header {
-  font-weight: bold;
+  font-weight: 600;
   margin-bottom: 5px;
   font-size: var(--font-ui-small);
   color: var(--text-muted);
@@ -68,7 +68,7 @@
 }
 
 .related-notes-tag-group:not(.collapsed) .related-notes-tag-group-header::before {
-  transform: translateY(-50%) translateY(-2px) translateX(1px) rotate(90deg); /* Expanded state: rotated caret pointing down with slight offset */
+  transform: translateY(-50%) translateY(0px) translateX(1px) rotate(90deg); /* Expanded state: rotated caret pointing down with slight offset */
 }
 
 /* Sorting controls */

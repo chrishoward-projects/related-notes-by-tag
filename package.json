@@ -1,13 +1,14 @@
 {
   "name": "related-notes-by-tag",
-  "version": "0.1.14",
+  "version": "0.2.0",
   "description": "Displays related notes in the sidebar based on shared tags with the active note.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "node esbuild.config.mjs production",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "version": "node version-bump.mjs && git add manifest.json versions.json"
   },
   "keywords": [
     "obsidian",

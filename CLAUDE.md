@@ -39,6 +39,7 @@ This is an Obsidian plugin written in TypeScript that displays related notes in 
 - External Obsidian APIs are marked as external in the build process
 - Uses TypeScript with strict null checks and inline source maps for development
 - Plugin is currently in "Phase 3: Polish" according to project plan
+- Refer always to Obsidian Developer Dcoumentation at [Obsidian Developer Docs](https://docs.obsidian.md/Home)
 
 ## Plugin Manifest
 
