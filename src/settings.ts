@@ -92,7 +92,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     instructionsDiv.createEl('ul', {}, (list) => {
       list.createEl('li', { text: 'Click tag group header to expand/collapse group' });
       list.createEl('li', { text: 'Click note name to open in current tab' });
-      list.createEl('li', { text: 'cmd/ctrl click note name to open in new tab' });
+      list.createEl('li', { text: 'Cmd/ctrl-click note name to open note in a new tab' });
       list.createEl('li', { text: 'Click Name/Date to change sort order' });
     });  }
 }

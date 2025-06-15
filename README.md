@@ -70,4 +70,4 @@ Found a bug or have a feature request? Please open an issue on [GitHub](https://
 
 ---
 
-**Author**: Chris Howard ([341design.com.au](https://341design.com.au))
+**Author**: Chris Howard ([GitHub](https://github.com/chrishoward-projects))
