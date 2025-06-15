@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Memory Management**: Proper cleanup of event listeners and DOM elements
 - **Type Safety**: Comprehensive TypeScript typing throughout the codebase
 - **UI Consistency**: Aligned with Obsidian's standard component styling and behavior
+- **Dropdown Behavior**: Fixed issue where multiple dropdowns could be open simultaneously
 
 ## [0.1.14] - 2025-01-XX
 
