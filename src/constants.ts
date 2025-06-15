@@ -9,7 +9,6 @@ export const ICONS = {
 export const CSS_CLASSES = {
   CONTAINER: 'related-notes-container',
   HEADER: 'related-notes-header',
-  TITLE: 'related-notes-title',
   ACTION_BUTTONS: 'action-buttons',
   SORT_CONTROLS: 'sort-controls',
   FILTER_CONTROLS: 'filter-controls',
@@ -20,7 +19,6 @@ export const CSS_CLASSES = {
   DROPDOWN_ITEM: 'dropdown-item',
   DROPDOWN_ITEM_ACTIVE: 'is-active',
   DROPDOWN_VISIBLE: 'is-visible',
-  ACTIVE_FILE_NAME: 'related-activefile-name',
   TAG_GROUP: 'related-notes-tag-group',
   TAG_GROUP_HEADER: 'related-notes-tag-group-header',
   NOTES_LIST: 'related-notes-list',

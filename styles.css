@@ -6,19 +6,6 @@
   overflow-y: auto;
 }
 
-.related-notes-container h4 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  font-size: var(--font-ui-small);
-  font-weight: bold;
-}
-
-.related-activefile-name {
-  font-size:var(--font-ui-small);
-  font-weight:bold;
-  margin-top:0;
-
-}
 
 .related-notes-list {
   list-style: decimal;

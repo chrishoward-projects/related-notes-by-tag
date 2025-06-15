@@ -2,7 +2,6 @@ import { App, PluginSettingTab, Setting } from 'obsidian';
 import RelatedNotesPlugin from './main';
 
 export interface RelatedNotesSettings {
-  customSidebarTitle: string;
   defaultSortMode: 'name'|'date'|'created';
   defaultFilterMode: 1 | 2 | 3;
   excludedTags: string;
@@ -11,7 +10,6 @@ export interface RelatedNotesSettings {
 }
 
 export const DEFAULT_SETTINGS: RelatedNotesSettings = {
-  customSidebarTitle: 'Related Notes By Tag',
   defaultSortMode: 'name',
   defaultFilterMode: 1,
   excludedTags: '',
@@ -32,17 +30,6 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
 
     containerEl.empty();
     containerEl.createEl('h2',{text:'Related notes by tag'});
-
-    new Setting(containerEl)
-      .setName('Custom sidebar title')
-      .setDesc('Title displayed at the top of the Related Notes sidebar')
-      .addText(text => text
-        .setPlaceholder('Enter custom title')
-        .setValue(this.plugin.settings.customSidebarTitle)
-        .onChange(async (value) => {
-          this.plugin.settings.customSidebarTitle = value;
-          await this.plugin.saveSettings();
-        }));
 
     new Setting(containerEl)
       .setName('Default sort mode')
