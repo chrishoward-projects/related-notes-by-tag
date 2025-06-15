@@ -12,3 +12,12 @@ writeFileSync("manifest.json", JSON.stringify(manifest, null, "\t"));
 let versions = JSON.parse(readFileSync("versions.json", "utf8"));
 versions[targetVersion] = minAppVersion;
 writeFileSync("versions.json", JSON.stringify(versions, null, "\t"));
+
+// update changelog with release date
+const today = new Date().toISOString().split('T')[0];
+let changelog = readFileSync("CHANGELOG.md", "utf8");
+changelog = changelog.replace(
+	`## [${targetVersion}] - 2025-01-XX`,
+	`## [${targetVersion}] - ${today}`
+);
+writeFileSync("CHANGELOG.md", changelog);
