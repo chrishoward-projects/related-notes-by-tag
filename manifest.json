@@ -1,10 +1,10 @@
 {
-  "id": "related-notes-by-tag",
-  "name": "Related Notes by Tag",
-  "version": "0.2.0",
-  "minAppVersion": "0.15.0",
-  "description": "Displays list of notes in the sidebar that share tags with the currently active note.",
-  "author": "Chris Howard",
-  "authorUrl": "https://github.com/chrishoward-projects",
-  "isDesktopOnly": false
+	"id": "related-notes-by-tag",
+	"name": "Related Notes by Tag",
+	"version": "0.2.1",
+	"minAppVersion": "0.15.0",
+	"description": "Displays list of notes in the sidebar that share tags with the currently active note.",
+	"author": "Chris Howard",
+	"authorUrl": "https://github.com/chrishoward-projects",
+	"isDesktopOnly": false
 }
