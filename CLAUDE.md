@@ -40,6 +40,14 @@ This is an Obsidian plugin written in TypeScript that displays related notes in 
 - Uses TypeScript with strict null checks and inline source maps for development
 - Refer always to Obsidian Developer Dcoumentation at [Obsidian Developer Docs](https://docs.obsidian.md/Home)
 
+### Version Management
+
+**IMPORTANT**: After completing any task that adds features, fixes bugs, or makes changes:
+1. Update CHANGELOG.md with the changes made
+2. Run `npm version patch` to bump the version and update manifest.json
+3. Commit the version bump
+4. This maintains proper version history and prepares for releases
+
 ## Plugin Manifest
 
 - Plugin ID: `related-notes-by-tag`
