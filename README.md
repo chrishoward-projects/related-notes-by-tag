@@ -1,57 +1,73 @@
-# Related Notes by Tag - Obsidian Plugin
+# Related Notes by Tag
 
-A productivity tool for Obsidian users who want to easily discover related content in their knowledge base through tag-based connections.
+Discover related content in your Obsidian vault through tag-based connections. This plugin displays notes that share tags with your currently active note, helping you find relevant information and build stronger knowledge connections.
 
-Displays a list of notes in the right sidebar that contain the same tags as the currently active note, effectively showing "related notes by tag."
+## Features
 
-## Current Status
+### Core Functionality
+- **Automatic Discovery**: Instantly shows related notes when you open any tagged note
+- **Sidebar Integration**: Clean, unobtrusive sidebar panel that fits seamlessly into your Obsidian workflow
+- **Real-time Updates**: Automatically refreshes when you switch between notes
+- **Tag-based Matching**: Finds notes that share one or more tags with your current note
 
-This plugin is currently in **Phase 3: Polish**.
+### Smart Controls
+- **Flexible Sorting**: Sort related notes by name, modified date, or creation date
+- **Tag Filtering**: Set minimum tag match requirements (1, 2, or 3+ matching tags)
+- **Matched Tags Display**: Toggle to show which specific tags are shared between notes
+- **Collapsible Groups**: Organize results by tag with expandable/collapsible sections
 
-## Planned Features (from Project Plan)
+### User Experience
+- **Clean Interface**: Follows Obsidian's design patterns for consistent user experience
+- **Quick Navigation**: Click any note title to open it immediately
+- **Modifier Support**: Cmd/Ctrl+click to open notes in new tabs
+- **Preview Support**: Hover with Cmd/Ctrl held to preview note content
 
-### Core Functionality (Phase 1)
+## Installation
 
-- Monitor the currently active note in the editor
-- Extract all tags from the current note
-- Search for other notes containing those same tags
-- Display matching notes in a dedicated view in the right sidebar
-- Update the display automatically when switching between notes
+### From Obsidian Community Plugins
+1. Open Obsidian Settings
+2. Go to Community Plugins
+3. Search for "Related Notes by Tag"
+4. Click Install, then Enable
 
-### Refinement (Phase 2)
+### Manual Installation
+1. Download the latest release from GitHub
+2. Extract to your vault's `.obsidian/plugins/related-notes-by-tag/` folder
+3. Enable the plugin in Obsidian Settings > Community Plugins
 
-- Add sorting options
-- Implement settings panel
-- Add filtering capabilities
-- Optimize performance for large vaults
+## How to Use
 
-### Polish (Phase 3 - In Progress)
+1. **Activate the Panel**: Click the tag icon in the ribbon or use the command palette ("Open Related Notes Panel")
+2. **Browse Related Notes**: The sidebar will automatically show notes related to your active note
+3. **Customize Display**: Use the controls to sort, filter, and toggle tag visibility
+4. **Navigate**: Click note titles to open them, or use modifier keys for new tabs
 
-- Improve UI with better formatting and icons
-- Add animations/transitions for a smoother experience
-- Include tooltips and helpful UI elements
-- Add documentation and user guide
+## Settings
 
-## Proposed Settings
+Access plugin settings through Obsidian Settings > Plugin Options > Related Notes by Tag:
 
-1.  **Display Options:**
-    - Show note title only vs. show title + tag matches
-    - Toggle display of note path/location
-    - Maximum number of notes to display per tag
-    - Sort by name or date edited
-2.  **Filtering Options:**
-    - Minimum tag match threshold (e.g., show notes that match at least 2 tags)
-    - Option to exclude certain tags from matching
-    - Ability to prioritize specific tags (weight them higher in relevance)
-3.  **Appearance Settings:**
-    - Custom CSS class options
-    - Toggle compact vs. detailed view
-    - Custom sidebar section title
-4.  **Behaviour Settings:**
-    - Auto-refresh frequency
-    - Cache results option (for performance)
-    - Option to include/exclude specific folders from search
+- **Custom Sidebar Title**: Personalize the sidebar panel title
+- **Default Sort Mode**: Choose how related notes are sorted by default
+- **Excluded Tags**: Specify tags to ignore when finding related notes
+- **Default Group State**: Set whether tag groups start collapsed or expanded
 
-## Author
+## Perfect For
 
-Chris Howard ([341design.com.au](https://341design.com.au))
+- **Research**: Find related research notes and sources
+- **Project Management**: Discover related project notes and tasks
+- **Knowledge Building**: Strengthen connections between related concepts
+- **Content Creation**: Find related drafts and reference materials
+- **Learning**: Connect related study notes and resources
+
+## Requirements
+
+- Obsidian v0.15.0 or higher
+- Notes with tags (hashtags or YAML frontmatter)
+
+## Support
+
+Found a bug or have a feature request? Please open an issue on [GitHub](https://github.com/chrishoward/related-notes-by-tag).
+
+---
+
+**Author**: Chris Howard ([341design.com.au](https://341design.com.au))
