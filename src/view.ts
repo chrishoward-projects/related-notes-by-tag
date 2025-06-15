@@ -61,6 +61,7 @@ export class RelatedNotesView extends ItemView {
 
   async onClose() {
     this.previewManager.cleanup();
+    this.uiRenderer.cleanup();
     this.container.empty();
   }
 

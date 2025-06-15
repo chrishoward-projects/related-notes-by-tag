@@ -14,6 +14,39 @@ export interface DropdownConfig {
 }
 
 export class UIRenderer {
+  private openDropdowns: Set<HTMLElement> = new Set();
+
+  constructor() {
+    // Global click handler to close dropdowns when clicking outside
+    document.addEventListener('click', this.handleGlobalClick);
+  }
+
+  private handleGlobalClick = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    
+    // Check if the click is outside all dropdown containers
+    let isInsideDropdown = false;
+    for (const dropdown of this.openDropdowns) {
+      if (dropdown.contains(target)) {
+        isInsideDropdown = true;
+        break;
+      }
+    }
+    
+    // If click is outside, close all dropdowns
+    if (!isInsideDropdown) {
+      this.closeAllDropdowns();
+    }
+  };
+
+  private closeAllDropdowns() {
+    this.openDropdowns.forEach(dropdown => {
+      const menu = dropdown.querySelector(`.${CSS_CLASSES.DROPDOWN_MENU}`);
+      if (menu) {
+        menu.classList.remove(CSS_CLASSES.DROPDOWN_VISIBLE);
+      }
+    });
+  }
   createDropdown(container: HTMLElement, config: DropdownConfig): HTMLElement {
     const dropdownContainer = container.createDiv(CSS_CLASSES.DROPDOWN_CONTAINER);
     if (config.containerClass) {
@@ -47,7 +80,19 @@ export class UIRenderer {
     
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
+      
+      // Close all other dropdowns first
+      this.closeAllDropdowns();
+      
+      // Then toggle this one
       menu.classList.toggle(CSS_CLASSES.DROPDOWN_VISIBLE);
+      
+      // Track this dropdown if it's now open
+      if (menu.classList.contains(CSS_CLASSES.DROPDOWN_VISIBLE)) {
+        this.openDropdowns.add(dropdownContainer);
+      } else {
+        this.openDropdowns.delete(dropdownContainer);
+      }
     });
     
     return dropdownContainer;
@@ -114,6 +159,10 @@ export class UIRenderer {
     
     toggleButton.addEventListener('click', (e) => {
       e.stopPropagation();
+      
+      // Close all dropdowns when toggle button is clicked
+      this.closeAllDropdowns();
+      
       const newState = !isActive;
       onToggle(newState);
       
@@ -128,5 +177,10 @@ export class UIRenderer {
     });
     
     return toggleButton;
+  }
+
+  cleanup() {
+    document.removeEventListener('click', this.handleGlobalClick);
+    this.openDropdowns.clear();
   }
 }
