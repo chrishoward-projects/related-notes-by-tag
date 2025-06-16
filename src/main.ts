@@ -8,7 +8,6 @@ export default class RelatedNotesPlugin extends Plugin {
   private view: RelatedNotesView | null = null;
 
   async onload() {
-    console.log('Loading Related Notes by Tag plugin');
 
     await this.loadSettings();
 
@@ -72,11 +71,9 @@ export default class RelatedNotesPlugin extends Plugin {
       // Users activate via ribbon icon or command
     });
 
-    console.log('Related Notes by Tag plugin loaded.');
   }
 
   onunload() {
-    console.log('Unloading Related Notes by Tag plugin');
     // Detach the view
     this.app.workspace.detachLeavesOfType(RELATED_NOTES_VIEW_TYPE);
     this.view = null;
