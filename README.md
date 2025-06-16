@@ -2,6 +2,8 @@
 
 Discover related content in your Obsidian vault through tag-based connections. This plugin displays notes that share tags with your currently active note, helping you find related notes and build stronger knowledge connections.
 
+If you're a heavy tag user, this plugin makes tags even more useful.
+
 ## Features
 
 ### Core Functionality
@@ -71,4 +73,5 @@ Found a bug or have a feature request? Please open an issue on [GitHub](https://
 ---
 
 **Author**: Chris Howard ([GitHub](https://github.com/chrishoward-projects))
-(Buy me a coffee)[https://coff.ee/4e8cu9fzwy]
+
+[Buy me a coffee](https://coff.ee/4e8cu9fzwy)
