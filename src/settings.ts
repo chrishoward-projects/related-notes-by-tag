@@ -13,7 +13,7 @@ export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   defaultSortMode: 'name',
   defaultFilterMode: 1,
   excludedTags: '',
-  defaultGroupState: 'collapsed',
+  defaultGroupState: 'expanded',
   showMatchedTags: false,
 };
 
