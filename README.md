@@ -76,4 +76,4 @@ Found a bug or have a feature request? Please open an issue on [GitHub](https://
 
 **Author**: Chris Howard ([GitHub](https://github.com/chrishoward-projects))
 
-[Buy me a coffee](https://coff.ee/4e8cu9fzwy)
+[![Buy me a coffee](assets/images/bmc-button.png)](https://coff.ee/4e8cu9fzwy)
