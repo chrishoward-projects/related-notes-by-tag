@@ -1,4 +1,4 @@
-import { TFile, MarkdownRenderer, App } from 'obsidian';
+import { TFile, MarkdownRenderer, App, Component } from 'obsidian';
 import { CSS_CLASSES, DIMENSIONS, TIMEOUTS } from './constants';
 
 export class PreviewManager {
@@ -106,21 +106,30 @@ export class PreviewManager {
     });
   }
 
-  private renderPreviewContent(file: TFile, linkEl: HTMLElement): void {
-    setTimeout(() => {
+  private renderPreviewContent(file: TFile, _linkEl: HTMLElement): void {
+    setTimeout(async () => {
       if (this.previewPopup && this.currentPreviewFile === file && this.isModifierHeld) {
-        MarkdownRenderer.render(
-          this.app,
-          `![[${file.basename}]]`,
-          this.previewPopup,
-          file.path,
-          this as any // Type assertion needed for Obsidian's renderer
-        ).then(() => {
+        try {
+          // Read the file content directly
+          const content = await this.app.vault.read(file);
+          
+          // Create a minimal component for the renderer
+          const component = new Component();
+          
+          await MarkdownRenderer.render(
+            this.app,
+            content,
+            this.previewPopup,
+            file.path,
+            component
+          );
           this.previewPopup?.addClass(CSS_CLASSES.PREVIEW_LOADED);
-          if (!linkEl.matches(':hover') || !this.isModifierHeld) {
-            // Optionally hide preview if no longer hovering
+        } catch (error) {
+          console.error('Failed to render preview:', error);
+          if (this.previewPopup) {
+            this.previewPopup.setText('Failed to load preview');
           }
-        });
+        }
       }
     }, TIMEOUTS.PREVIEW_RENDER_DELAY);
   }
