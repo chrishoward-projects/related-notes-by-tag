@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "node esbuild.config.mjs production && ./deploy.sh",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "version": "node version-bump.mjs && git add manifest.json versions.json CHANGELOG.md",
     "changelog": "node prepare-changelog.mjs",

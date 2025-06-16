@@ -69,7 +69,7 @@ export class PreviewManager extends Component {
     
     document.addEventListener('click', this.hidePreviewOnClick, { once: true });
     
-    this.renderPreviewContent(file, linkEl);
+    this.renderPreviewContent(file);
   }
 
   private calculatePosition(linkEl: HTMLElement): { left: number; top: number } {
@@ -108,7 +108,7 @@ export class PreviewManager extends Component {
     });
   }
 
-  private renderPreviewContent(file: TFile, _linkEl: HTMLElement): void {
+  private renderPreviewContent(file: TFile): void {
     setTimeout(async () => {
       if (this.previewPopup && this.currentPreviewFile === file && this.isModifierHeld) {
         try {

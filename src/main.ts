@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, TFile, Notice, addIcon } from 'obsidian';
+import { Plugin, WorkspaceLeaf, Notice, addIcon } from 'obsidian';
 import { RelatedNotesSettings, DEFAULT_SETTINGS, RelatedNotesSettingTab } from './settings';
 import { RelatedNotesView, RELATED_NOTES_VIEW_TYPE } from './view';
 import { ICONS, TIMEOUTS } from './constants';

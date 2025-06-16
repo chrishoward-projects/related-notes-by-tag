@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
 import RelatedNotesPlugin from './main';
 import { TagAnalyzer, FileWithMatchedTags } from './tag-analyzer';
 import { PreviewManager } from './preview-manager';
