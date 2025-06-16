@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "fs";
+import { execSync } from "child_process";
 
 const targetVersion = process.env.npm_package_version;
 
@@ -21,3 +22,13 @@ changelog = changelog.replace(
 	`## [${targetVersion}] - ${today}`
 );
 writeFileSync("CHANGELOG.md", changelog);
+
+// run build to ensure main.js is updated
+console.log("Building plugin...");
+try {
+	execSync("npm run build", { stdio: "inherit" });
+	console.log("Build completed successfully");
+} catch (error) {
+	console.error("Build failed:", error.message);
+	process.exit(1);
+}

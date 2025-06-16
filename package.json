@@ -8,7 +8,7 @@
     "build": "node esbuild.config.mjs production && ./deploy.sh",
     "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "version": "node version-bump.mjs && git add manifest.json versions.json CHANGELOG.md",
+    "version": "node version-bump.mjs && git add manifest.json versions.json CHANGELOG.md main.js",
     "changelog": "node prepare-changelog.mjs",
     "deploy": "./deploy.sh"
   },
