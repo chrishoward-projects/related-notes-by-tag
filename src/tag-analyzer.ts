@@ -37,8 +37,12 @@ export class TagAnalyzer {
   private getFilteredTags(tags: string[], excludedTagsString: string): string[] {
     const excludedTags = excludedTagsString
       .split(',')
-      .map(tag => tag.trim().toLowerCase())
-      .filter(tag => tag.length > 0);
+      .map(tag => {
+        const trimmedTag = tag.trim().toLowerCase();
+        // Add # prefix if not present
+        return trimmedTag.startsWith('#') ? trimmedTag : `#${trimmedTag}`;
+      })
+      .filter(tag => tag.length > 1); // Must be more than just '#'
 
     return [...new Set(tags)]
       .filter(tag => !excludedTags.includes(tag.toLowerCase()));

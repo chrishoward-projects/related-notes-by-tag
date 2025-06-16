@@ -46,9 +46,9 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Excluded tags')
-      .setDesc('Comma-separated list of tags to exclude from related notes')
+      .setDesc('Comma-separated list of tags to exclude from related notes (# prefix optional)')
       .addText(text => text
-        .setPlaceholder('e.g., #ignore, #draft')
+        .setPlaceholder('e.g., ignore, draft, #private')
         .setValue(this.plugin.settings.excludedTags)
         .onChange(async (value) => {
           this.plugin.settings.excludedTags = value;
