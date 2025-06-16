@@ -187,15 +187,28 @@ export class RelatedNotesView extends ItemView {
   }
 
   private setupFileLinkEvents(linkEl: HTMLElement, file: TFile): void {
+    let hoverTimer: number;
+    
     linkEl.addEventListener('mouseenter', (e: MouseEvent) => {
-      if (e.metaKey || e.ctrlKey || this.previewManager.getIsModifierHeld()) {
+      // Check immediately for modifier key
+      if (e.metaKey || e.ctrlKey) {
         this.previewManager.showPreview(file, linkEl);
+      } else {
+        // Set up a timer to check for modifier key press while hovering
+        hoverTimer = setTimeout(() => {
+          if (linkEl.matches(':hover') && this.previewManager.getIsModifierHeld()) {
+            this.previewManager.showPreview(file, linkEl);
+          }
+        }, 100);
       }
     });
     
-    linkEl.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && linkEl.matches(':hover')) {
-        this.previewManager.showPreview(file, linkEl);
+    linkEl.addEventListener('mouseleave', () => {
+      if (hoverTimer) {
+        clearTimeout(hoverTimer);
+      }
+      if (!this.previewManager.getIsModifierHeld()) {
+        this.previewManager.hidePreview();
       }
     });
 

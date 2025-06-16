@@ -48,9 +48,11 @@ export class PreviewManager {
   };
 
   private handleKeyUp = (e: KeyboardEvent): void => {
-    this.isModifierHeld = e.metaKey || e.ctrlKey;
-    if (!this.isModifierHeld && this.previewPopup) {
-      this.hidePreview();
+    if (e.key === 'Meta' || e.key === 'Control') {
+      this.isModifierHeld = false;
+      if (this.previewPopup) {
+        this.hidePreview();
+      }
     }
   };
 
