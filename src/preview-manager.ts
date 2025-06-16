@@ -1,13 +1,14 @@
 import { TFile, MarkdownRenderer, App, Component } from 'obsidian';
 import { CSS_CLASSES, DIMENSIONS, TIMEOUTS } from './constants';
 
-export class PreviewManager {
+export class PreviewManager extends Component {
   private previewPopup: HTMLElement | null = null;
   private currentPreviewFile: TFile | null = null;
   private isModifierHeld = false;
   private lastMousePosition = { x: 0, y: 0 };
 
   constructor(private app: App) {
+    super();
     this.setupEventListeners();
   }
 
@@ -22,6 +23,7 @@ export class PreviewManager {
     document.removeEventListener('keydown', this.handleKeyDown);
     document.removeEventListener('keyup', this.handleKeyUp);
     this.hidePreview();
+    this.unload(); // Properly unload the component
   }
 
   private trackMousePosition = (e: MouseEvent): void => {
@@ -113,15 +115,13 @@ export class PreviewManager {
           // Read the file content directly
           const content = await this.app.vault.read(file);
           
-          // Create a minimal component for the renderer
-          const component = new Component();
-          
+          // Use this PreviewManager instance as the component since it extends Component
           await MarkdownRenderer.render(
             this.app,
             content,
             this.previewPopup,
             file.path,
-            component
+            this
           );
           this.previewPopup?.addClass(CSS_CLASSES.PREVIEW_LOADED);
         } catch (error) {
