@@ -6,5 +6,6 @@
 	"description": "Displays list of notes in the sidebar that share tags with the currently active note.",
 	"author": "Chris Howard",
 	"authorUrl": "https://github.com/chrishoward-projects",
+  "fundingUrl":"https://coff.ee/4e8cu9fzwy",
 	"isDesktopOnly": false
 }
