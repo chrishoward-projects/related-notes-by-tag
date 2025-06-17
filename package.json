@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "version": "node version-bump.mjs && git add manifest.json versions.json CHANGELOG.md main.js",
-    "update-version": "npm version patch --no-git-tag-version && node version-bump.mjs && git add . && git commit -m 'Version update'",
+    "update-version": "npm version patch --no-git-tag-version && node version-bump.mjs",
     "changelog": "node prepare-changelog.mjs",
     "deploy": "./deploy.sh",
     "release": "./release.sh"

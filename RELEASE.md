@@ -24,11 +24,14 @@ This will:
 - Update `versions.json` with the new version mapping
 - Update `CHANGELOG.md` with the current date
 - Build the plugin automatically
-- Create a single git commit with all changes
 
 **Note:** This replaces the old `npm version patch` which caused dual commits.
 
-### 3. Continue Development
+### 3. Commit
+
+Run a commit describing all changes
+
+### 4. Continue Development
 No tags or releases are created during development. You can:
 - Continue making changes
 - Run `npm run update-version` as needed
