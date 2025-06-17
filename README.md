@@ -46,18 +46,18 @@ If you're a heavy tag user, this plugin makes tags even more useful.
 
 ## How to Use
 
-1. **Activate the Panel**: Click the tag icon in the ribbon or use the command palette ("Open Related Notes Panel")
-2. **Browse Related Notes**: The sidebar will automatically show notes related to your active note
-3. **Customize Display**: Use the controls to sort, filter, and toggle tag visibility
-4. **Navigate**: Click note titles to open them, or use modifier keys for new tabs
+1. **Find the Panel**: After installation, the Related Notes by Tag panel automatically appears in your right sidebar (but stays closed)
+2. **Open the Panel**: Click on the "Related Notes by Tag" tab in the right sidebar, or use the command palette ("Open Related Notes by Tag sidebar")
+3. **Browse Related Notes**: The panel will automatically show notes related to your active note
+4. **Customize Display**: Use the controls to sort, filter, and toggle tag visibility
+5. **Navigate**: Click note titles to open them, or use modifier keys for new tabs
 
 ## Settings
 
 Access plugin settings through Obsidian Settings > Plugin Options > Related Notes by Tag:
 
-* **Custom Sidebar Title**: Personalize the sidebar panel title
 * **Default Sort Mode**: Choose how related notes are sorted by default
-* **Excluded Tags**: Specify tags to ignore when finding related notes
+* **Excluded Tags**: Specify tags to ignore when finding related notes (# prefix optional)
 * **Default Group State**: Set whether tag groups start collapsed or expanded
 
 ## Perfect For

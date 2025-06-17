@@ -23,7 +23,7 @@ export default class RelatedNotesPlugin extends Plugin {
     // Add a command to activate the view
     this.addCommand({
       id: 'open-related-notes-panel',
-      name: 'Open Related Notes Panel',
+      name: 'Open Related Notes by Tag sidebar',
       callback: () => {
         this.activateView();
       },
@@ -124,7 +124,7 @@ export default class RelatedNotesPlugin extends Plugin {
         // The view instance is created by the registerView callback
         // and updateView will be called by its onOpen method.
     } else {
-        new Notice('Could not open Related Notes panel: No available leaf.');
+        new Notice('Could not Open Related Notes by Tag sidebar: No available leaf.');
     }
   }
 }

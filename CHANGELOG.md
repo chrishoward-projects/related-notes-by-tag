@@ -5,6 +5,8 @@ All notable changes to the Related Notes by Tag plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.13] - 2025-06-17
+- **Tidy display text**: Ensure consistent language and capitalisation of text for plugin name usage.
 
 ## [0.2.12] - 2025-06-17
 
@@ -106,7 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tag Group Display**: Notes organized by the tags they share
 - **Click Navigation**: Click note names to open them
 - **Ribbon Icon**: Quick access button in the Obsidian ribbon
-- **Command Palette**: "Open Related Notes Panel" command
+- **Command Palette**: "Open Related Notes by Tag sidebar" command
 
 ### Technical
 - **Plugin Foundation**: Initial plugin structure with TypeScript and esbuild

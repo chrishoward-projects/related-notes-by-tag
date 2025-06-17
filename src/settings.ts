@@ -29,11 +29,11 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     const { containerEl } = this;
 
     containerEl.empty();
-    containerEl.createEl('h2',{text:'Related notes by tag'});
+    containerEl.createEl('h2',{text:'Related Notes by Tag'});
 
     new Setting(containerEl)
       .setName('Default sort mode')
-      .setDesc('How to sort related notes by default')
+      .setDesc('Default sort method for related notes')
       .addDropdown(dropdown => dropdown
         .addOption('name', 'Name')
         .addOption('date', 'Date Edited')
@@ -70,10 +70,10 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     // Add static instructions
    containerEl.createEl('h3', { text: 'Activation and usage instructions' });
    const instructionsDiv = containerEl.createDiv('related-notes-instructions');
-    instructionsDiv.createEl('p', { text: 'To activate the Related Notes By Tag sidebar:' });
+    instructionsDiv.createEl('p', { text: 'To activate the Related Notes by Tag sidebar:' });
     instructionsDiv.createEl('ul', {}, (list) => {
       list.createEl('li', { text: 'Click the ribbon icon (tag icon)' });
-      list.createEl('li', { text: 'Or use the command palette: "Open Related Notes Panel"' });
+      list.createEl('li', { text: 'Or use the command palette: "Open Related Notes by Tag sidebar"' });
     });
     instructionsDiv.createEl('p', { text: 'Usage:' });
     instructionsDiv.createEl('ul', {}, (list) => {
