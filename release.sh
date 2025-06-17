@@ -36,7 +36,7 @@ fi
 # Create and push tag
 echo "Creating and pushing tag $TAG..."
 git tag "$TAG"
-git push origin "$TAG"
+git push origin-projects "$TAG"
 
 # Create GitHub release
 echo "Creating GitHub release..."
