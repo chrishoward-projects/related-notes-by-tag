@@ -6,10 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.2.11] - 2025-06-17
+
+### Changed
+- **Release Process**: Separated GitHub release creation from automatic workflow to manual script
+- **Development**: Removed automatic tagging on every version for cleaner development workflow
+
 ## [0.2.10] - 2025-06-17
 
 ### Changed
-
 - **Activation**: Removed activation button as added clutter
 - **Settings**: Updated help info
 
