@@ -61,8 +61,7 @@ export default class RelatedNotesPlugin extends Plugin {
 
     // Layout ready handler
     this.app.workspace.onLayoutReady(() => {
-      // Currently no auto-open functionality
-      // Users activate via ribbon icon or command
+      this.initializePanelInSidebar();
     });
 
   }
@@ -82,6 +81,23 @@ export default class RelatedNotesPlugin extends Plugin {
     if (this.view) {
       // Trigger a view update if settings change that affect display
       await this.view.updateView();
+    }
+  }
+
+  async initializePanelInSidebar() {
+    // Check if panel already exists
+    const existingLeaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_VIEW_TYPE);
+    if (existingLeaves.length > 0) {
+      return; // Already exists
+    }
+
+    // Add panel to right sidebar without opening it
+    const leaf = this.app.workspace.getRightLeaf(false);
+    if (leaf) {
+      await leaf.setViewState({
+        type: RELATED_NOTES_VIEW_TYPE,
+        active: false, // Don't make it active (visible)
+      });
     }
   }
 
