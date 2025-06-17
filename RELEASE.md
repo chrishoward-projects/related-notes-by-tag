@@ -51,7 +51,7 @@ npm run release
 This will:
 - Check for uncommitted changes (fails if any)
 - Build the plugin
-- Create and push a git tag (e.g., v0.2.12)
+- Create and push a git tag (e.g., 0.2.12)
 - Create a GitHub release (as draft)
 - Upload required files (`main.js`, `manifest.json`, `styles.css`)
 - Create and upload zip file
@@ -67,7 +67,7 @@ If the release script fails:
 
 1. Ensure all changes are committed
 2. Run `npm run build`
-3. Manually create git tag: `git tag v0.2.12 && git push origin v0.2.12`
+3. Manually create git tag: `git tag 0.2.12 && git push origin 0.2.12`
 4. Create GitHub release manually
 5. Upload `main.js`, `manifest.json`, and `styles.css`
 

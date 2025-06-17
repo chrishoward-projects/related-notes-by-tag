@@ -7,7 +7,7 @@ set -e
 
 # Get current version from package.json
 VERSION=$(node -p "require('./package.json').version")
-TAG="v$VERSION"
+TAG="$VERSION"
 
 echo "Creating release for version $VERSION (tag: $TAG)"
 
