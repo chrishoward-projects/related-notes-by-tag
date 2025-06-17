@@ -5,6 +5,14 @@ All notable changes to the Related Notes by Tag plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.2.10] - 2025-06-17
+
+### Changed
+
+- **Activation**: Removed activation button as added clutter
+- **Settings**: Updated help info
+
 ## [0.2.9] - 2025-06-17
 
 ### Improved

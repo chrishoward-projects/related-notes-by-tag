@@ -68,9 +68,9 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
         }));
 
     // Add static instructions
-   containerEl.createEl('h3', { text: 'Activation and Usage Instructions' });
+   containerEl.createEl('h3', { text: 'Activation and usage instructions' });
    const instructionsDiv = containerEl.createDiv('related-notes-instructions');
-    instructionsDiv.createEl('p', { text: 'To activate the Related Notes sidebar:' });
+    instructionsDiv.createEl('p', { text: 'To activate the Related Notes By Tag sidebar:' });
     instructionsDiv.createEl('ul', {}, (list) => {
       list.createEl('li', { text: 'Click the ribbon icon (tag icon)' });
       list.createEl('li', { text: 'Or use the command palette: "Open Related Notes Panel"' });

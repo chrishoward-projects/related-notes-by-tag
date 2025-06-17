@@ -20,12 +20,6 @@ export default class RelatedNotesPlugin extends Plugin {
       }
     );
 
-    // Add a ribbon icon to activate the view
-    addIcon('related-notes-icon', ICONS.RELATED_NOTES);
-    this.addRibbonIcon('related-notes-icon', 'Open Related Notes Panel', () => {
-      this.activateView();
-    });
-
     // Add a command to activate the view
     this.addCommand({
       id: 'open-related-notes-panel',
