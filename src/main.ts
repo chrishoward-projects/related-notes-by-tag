@@ -1,7 +1,7 @@
-import { Plugin, WorkspaceLeaf, Notice, addIcon } from 'obsidian';
+import { Plugin, WorkspaceLeaf, Notice } from 'obsidian';
 import { RelatedNotesSettings, DEFAULT_SETTINGS, RelatedNotesSettingTab } from './settings';
 import { RelatedNotesView, RELATED_NOTES_VIEW_TYPE } from './view';
-import { ICONS, TIMEOUTS } from './constants';
+import { TIMEOUTS } from './constants';
 
 export default class RelatedNotesPlugin extends Plugin {
   settings: RelatedNotesSettings;
@@ -23,7 +23,7 @@ export default class RelatedNotesPlugin extends Plugin {
     // Add a command to activate the view
     this.addCommand({
       id: 'open-related-notes-panel',
-      name: 'Open Related Notes by Tag sidebar',
+      name: 'Open sidebar',
       callback: () => {
         this.activateView();
       },
@@ -67,8 +67,6 @@ export default class RelatedNotesPlugin extends Plugin {
   }
 
   onunload() {
-    // Detach the view
-    this.app.workspace.detachLeavesOfType(RELATED_NOTES_VIEW_TYPE);
     this.view = null;
   }
 

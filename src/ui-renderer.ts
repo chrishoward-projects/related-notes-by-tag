@@ -56,7 +56,11 @@ export class UIRenderer {
     const trigger = dropdownContainer.createEl('button', {
       cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} clickable-icon`
     });
-    trigger.innerHTML = config.icon;
+    // Create SVG element from icon string using DOM parser
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(config.icon, 'image/svg+xml');
+    const svgElement = svgDoc.documentElement;
+    trigger.appendChild(svgElement);
     
     const menu = dropdownContainer.createDiv(CSS_CLASSES.DROPDOWN_MENU);
     
@@ -155,7 +159,11 @@ export class UIRenderer {
       title: isActive ? 'Hide matched tags' : 'Show matched tags'
     });
     
-    toggleButton.innerHTML = ICONS.TAGS_TOGGLE;
+    // Create SVG element from icon string using DOM parser
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(ICONS.TAGS_TOGGLE, 'image/svg+xml');
+    const svgElement = svgDoc.documentElement;
+    toggleButton.appendChild(svgElement);
     
     toggleButton.addEventListener('click', (e) => {
       e.stopPropagation();

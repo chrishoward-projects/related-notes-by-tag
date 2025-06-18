@@ -5,6 +5,15 @@ All notable changes to the Related Notes by Tag plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.15]
+
+### Fixed
+- Replace innerHTML usage with DOM API for security compliance
+- Move inline styles to CSS for better theme adaptability  
+- Remove plugin name from command name per Obsidian guidelines
+- Remove leaf detaching antipattern from onunload method
+- Clean up unused imports
+
 ## [0.2.14] - 2025-06-17
 
 ### Added

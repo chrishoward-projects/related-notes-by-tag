@@ -144,9 +144,8 @@ export class RelatedNotesView extends ItemView {
       });
       
       const listEl = tagGroupEl.createEl('ul', { cls: CSS_CLASSES.NOTES_LIST });
-      listEl.style.display = this.plugin.settings.defaultGroupState === 'collapsed' ? 'none' : '';
 
-      this.setupTagGroupToggle(tagGroupEl, headerEl, listEl);
+      this.setupTagGroupToggle(tagGroupEl, headerEl);
       
       const sortedFiles = this.tagAnalyzer.sortFiles(files, this.plugin.settings.defaultSortMode);
       this.renderFileList(listEl, sortedFiles);
@@ -155,10 +154,9 @@ export class RelatedNotesView extends ItemView {
     });
   }
 
-  private setupTagGroupToggle(tagGroupEl: HTMLElement, headerEl: HTMLElement, listEl: HTMLElement): void {
+  private setupTagGroupToggle(tagGroupEl: HTMLElement, headerEl: HTMLElement): void {
     headerEl.addEventListener('click', () => {
       tagGroupEl.toggleClass('collapsed', !tagGroupEl.hasClass('collapsed'));
-      listEl.style.display = tagGroupEl.hasClass('collapsed') ? 'none' : '';
     });
   }
 

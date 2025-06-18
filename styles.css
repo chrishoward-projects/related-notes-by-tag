@@ -132,8 +132,14 @@
 }
 
 
-/* The list itself is hidden/shown via JS (display: none/block) */
-/* No additional CSS needed for .related-notes-list for collapse/expand functionality */
+/* The list itself is hidden/shown via CSS classes instead of inline styles */
+.related-notes-tag-group.collapsed .related-notes-list {
+  display: none;
+}
+
+.related-notes-tag-group:not(.collapsed) .related-notes-list {
+  display: block;
+}
 
 .related-notes-instructions {
   background:#f9f9f9;
