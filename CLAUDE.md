@@ -40,6 +40,14 @@ This is an Obsidian plugin written in TypeScript that displays related notes in 
 - Uses TypeScript with strict null checks and inline source maps for development
 - Refer always to Obsidian Developer Dcoumentation at [Obsidian Developer Docs](https://docs.obsidian.md/Home)
 
+### Obsidian Submission Compliance
+
+When making changes, ensure compliance with Obsidian submission guidelines:
+- **Security**: Use DOM API or DOMParser instead of innerHTML/outerHTML
+- **Styling**: Move inline styles to CSS files for better theme compatibility
+- **Commands**: Don't include plugin name in command names
+- **Lifecycle**: Never detach leaves in onunload() method
+
 ### Version Management
 
 **IMPORTANT**: After completing any task that adds features, fixes bugs, or makes changes:

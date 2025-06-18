@@ -196,6 +196,12 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 - Include proper loading states and error messages
 - Use Obsidian's standard icons and styling
 
+### Obsidian Submission Guidelines
+- **Security**: Never use innerHTML/outerHTML - use DOM API or DOMParser instead
+- **Styling**: Move all inline styles to CSS files for theme compatibility
+- **Commands**: Command names should not include the plugin name
+- **Lifecycle**: Don't detach leaves in onunload() - this is an antipattern
+
 ### Event Handling
 ```typescript
 // Proper event cleanup pattern
