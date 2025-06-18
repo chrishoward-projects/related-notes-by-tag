@@ -47,6 +47,8 @@ When making changes, ensure compliance with Obsidian submission guidelines:
 - **Styling**: Move inline styles to CSS files for better theme compatibility
 - **Commands**: Don't include plugin name in command names
 - **Lifecycle**: Never detach leaves in onunload() method
+- **Policies**: Ensure compliance with Obsidian Developer Policies https://docs.obsidian.md/Developer+policies
+- **Guidelines**: Ensure compliance with Obsidian Plugin Guidelines https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines
 
 ### Version Management
 

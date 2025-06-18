@@ -201,6 +201,9 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 - **Styling**: Move all inline styles to CSS files for theme compatibility
 - **Commands**: Command names should not include the plugin name
 - **Lifecycle**: Don't detach leaves in onunload() - this is an antipattern
+- **Policies**: Ensure compliance with Obsidian Developer Policies https://docs.obsidian.md/Developer+policies
+- **Guidelines**: Ensure compliance with Obsidian Plugin Guidelines https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines
+
 
 ### Event Handling
 ```typescript
