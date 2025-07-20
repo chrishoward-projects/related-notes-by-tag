@@ -45,7 +45,7 @@ export class RelatedNotesView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Related Notes by Tag';
+    return 'Related notes by tag';
   }
 
   getIcon(): string {

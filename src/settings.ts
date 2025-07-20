@@ -29,7 +29,6 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     const { containerEl } = this;
 
     containerEl.empty();
-    containerEl.createEl('h2',{text:'Related Notes by Tag'});
 
     new Setting(containerEl)
       .setName('Default sort mode')
