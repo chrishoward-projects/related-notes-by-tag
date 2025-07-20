@@ -5,7 +5,6 @@ import { TIMEOUTS } from './constants';
 
 export default class RelatedNotesPlugin extends Plugin {
   settings: RelatedNotesSettings;
-  private view: RelatedNotesView | null = null;
 
   async onload() {
 
@@ -14,10 +13,7 @@ export default class RelatedNotesPlugin extends Plugin {
     // Register the view
     this.registerView(
       RELATED_NOTES_VIEW_TYPE,
-      (leaf) => {
-        this.view = new RelatedNotesView(leaf, this);
-        return this.view;
-      }
+      (leaf) => new RelatedNotesView(leaf, this)
     );
 
     // Add a command to activate the view
@@ -38,11 +34,13 @@ export default class RelatedNotesPlugin extends Plugin {
         // Check if our view exists, if an activeLeaf is provided,
         // if our view's leaf is not the one that just became active,
         // and if the newly active leaf is a markdown view.
-        if (this.view && activeLeaf && this.view.leaf !== activeLeaf && activeLeaf.view.getViewType() === 'markdown') {
+        const view = this.getView();
+        if (view && activeLeaf && view.leaf !== activeLeaf && activeLeaf.view.getViewType() === 'markdown') {
           // Defer update to allow click event and other UI changes to complete
           setTimeout(async () => {
-            if (this.view) { // Re-check this.view in case it was closed during the timeout
-              await this.view.updateView();
+            const currentView = this.getView(); // Re-check view in case it was closed during the timeout
+            if (currentView) {
+              await currentView.updateView();
             }
           }, TIMEOUTS.VIEW_UPDATE_DELAY);
         }
@@ -52,8 +50,9 @@ export default class RelatedNotesPlugin extends Plugin {
     this.registerEvent(
       this.app.metadataCache.on('changed', async (file) => {
         // Only update if the changed file is the active file and the view is open
-        if (this.view && this.app.workspace.getActiveFile()?.path === file.path) {
-          await this.view.updateView();
+        const view = this.getView();
+        if (view && this.app.workspace.getActiveFile()?.path === file.path) {
+          await view.updateView();
         }
         // Only update for active file changes to reduce excessive updates
       })
@@ -67,7 +66,15 @@ export default class RelatedNotesPlugin extends Plugin {
   }
 
   onunload() {
-    this.view = null;
+    // No need to manage view references
+  }
+
+  private getView(): RelatedNotesView | null {
+    const leaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_VIEW_TYPE);
+    if (leaves.length > 0) {
+      return leaves[0].view as RelatedNotesView;
+    }
+    return null;
   }
 
   async loadSettings() {
@@ -76,9 +83,10 @@ export default class RelatedNotesPlugin extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
-    if (this.view) {
+    const view = this.getView();
+    if (view) {
       // Trigger a view update if settings change that affect display
-      await this.view.updateView();
+      await view.updateView();
     }
   }
 

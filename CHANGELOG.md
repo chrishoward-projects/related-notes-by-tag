@@ -5,6 +5,15 @@ All notable changes to the Related Notes by Tag plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.16]
+
+### Fixed
+- Remove direct view reference management to comply with Obsidian submission guidelines
+- Use workspace API to find views instead of storing references
+- Remove plugin title from settings screen
+- Use sentence case in UI, product / brand names
+- Tweak usage instructions for clarity
+
 ## [0.2.15]
 
 ### Fixed
