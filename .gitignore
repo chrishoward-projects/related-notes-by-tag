@@ -6,3 +6,7 @@ yarn-error.log*
 .DS_Store
 .vscode/
 *.log
+
+# Build artifacts
+main.js
+data.json
