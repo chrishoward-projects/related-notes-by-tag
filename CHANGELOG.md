@@ -5,6 +5,12 @@ All notable changes to the Related Notes by Tag plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.17]
+
+### Changed
+- Remove build artifacts (main.js, data.json) from repository
+- Add build artifacts to .gitignore to separate source from release assets
+
 ## [0.2.16]
 
 ### Fixed
