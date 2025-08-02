@@ -5,7 +5,7 @@ import { PreviewManager } from './preview-manager';
 import { UIRenderer } from './ui-renderer';
 import { CSS_CLASSES } from './constants';
 
-export const RELATED_NOTES_VIEW_TYPE = 'related-notes-view';
+export const RELATED_NOTES_BY_TAG_VIEW_TYPE = 'related-notes-by-tag-view';
 
 export class RelatedNotesView extends ItemView {
   plugin: RelatedNotesPlugin;
@@ -41,7 +41,7 @@ export class RelatedNotesView extends ItemView {
   }
 
   getViewType(): string {
-    return RELATED_NOTES_VIEW_TYPE;
+    return RELATED_NOTES_BY_TAG_VIEW_TYPE;
   }
 
   getDisplayText(): string {

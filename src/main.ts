@@ -1,6 +1,6 @@
 import { Plugin, WorkspaceLeaf, Notice } from 'obsidian';
 import { RelatedNotesSettings, DEFAULT_SETTINGS, RelatedNotesSettingTab } from './settings';
-import { RelatedNotesView, RELATED_NOTES_VIEW_TYPE } from './view';
+import { RelatedNotesView, RELATED_NOTES_BY_TAG_VIEW_TYPE } from './view';
 import { TIMEOUTS } from './constants';
 
 export default class RelatedNotesPlugin extends Plugin {
@@ -12,7 +12,7 @@ export default class RelatedNotesPlugin extends Plugin {
 
     // Register the view
     this.registerView(
-      RELATED_NOTES_VIEW_TYPE,
+      RELATED_NOTES_BY_TAG_VIEW_TYPE,
       (leaf) => new RelatedNotesView(leaf, this)
     );
 
@@ -70,7 +70,7 @@ export default class RelatedNotesPlugin extends Plugin {
   }
 
   private getView(): RelatedNotesView | null {
-    const leaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_VIEW_TYPE);
+    const leaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_BY_TAG_VIEW_TYPE);
     if (leaves.length > 0) {
       return leaves[0].view as RelatedNotesView;
     }
@@ -92,7 +92,7 @@ export default class RelatedNotesPlugin extends Plugin {
 
   async initializePanelInSidebar() {
     // Check if panel already exists
-    const existingLeaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_VIEW_TYPE);
+    const existingLeaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_BY_TAG_VIEW_TYPE);
     if (existingLeaves.length > 0) {
       return; // Already exists
     }
@@ -101,7 +101,7 @@ export default class RelatedNotesPlugin extends Plugin {
     const leaf = this.app.workspace.getRightLeaf(false);
     if (leaf) {
       await leaf.setViewState({
-        type: RELATED_NOTES_VIEW_TYPE,
+        type: RELATED_NOTES_BY_TAG_VIEW_TYPE,
         active: false, // Don't make it active (visible)
       });
     }
@@ -109,7 +109,7 @@ export default class RelatedNotesPlugin extends Plugin {
 
   async activateView() {
     // Check if view is already open
-    const existingLeaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_VIEW_TYPE);
+    const existingLeaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_BY_TAG_VIEW_TYPE);
     if (existingLeaves.length > 0) {
       this.app.workspace.revealLeaf(existingLeaves[0]);
       return;
@@ -123,7 +123,7 @@ export default class RelatedNotesPlugin extends Plugin {
     }
     if (leaf) {
         await leaf.setViewState({
-            type: RELATED_NOTES_VIEW_TYPE,
+            type: RELATED_NOTES_BY_TAG_VIEW_TYPE,
             active: true,
         });
         this.app.workspace.revealLeaf(leaf);
