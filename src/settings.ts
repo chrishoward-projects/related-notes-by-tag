@@ -1,12 +1,19 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import RelatedNotesPlugin from './main';
 
+export interface FolderExclusion {
+  path: string;           // Absolute path from vault root
+  includeChildren: boolean; // Whether to exclude subfolders
+  id: string;            // Unique identifier for UI management
+}
+
 export interface RelatedNotesSettings {
   defaultSortMode: 'name'|'date'|'created';
   defaultFilterMode: 1 | 2 | 3;
   excludedTags: string;
   defaultGroupState: 'collapsed'|'expanded';
   showMatchedTags: boolean;
+  excludedFolders: FolderExclusion[];
 }
 
 export const DEFAULT_SETTINGS: RelatedNotesSettings = {
@@ -15,6 +22,7 @@ export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   excludedTags: '',
   defaultGroupState: 'expanded',
   showMatchedTags: false,
+  excludedFolders: [],
 };
 
 export class RelatedNotesSettingTab extends PluginSettingTab {

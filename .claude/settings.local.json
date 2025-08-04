@@ -1,5 +1,9 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)"
+    ],
     "additionalDirectories": [
       "/Users/chrishoward/Obsidian/Development/.obsidian/plugins/move-by-tag"
     ]
