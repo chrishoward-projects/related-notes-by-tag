@@ -54,30 +54,12 @@ export class FolderSuggestions {
     // Create a new suggestions container
     const newContainer = document.createElement('div');
     newContainer.className = 'folder-suggestions-container';
-    newContainer.style.position = 'absolute';
-    newContainer.style.backgroundColor = 'var(--background-primary)';
-    newContainer.style.border = '1px solid var(--background-modifier-border)';
-    newContainer.style.borderRadius = '4px';
-    newContainer.style.zIndex = '1000';
-    newContainer.style.boxShadow = '0 2px 8px var(--background-modifier-box-shadow)';
 
     // Add suggestions to the container
     folders.forEach(folder => {
       const suggestionItem = document.createElement('div');
       suggestionItem.className = 'folder-suggestion-item';
       suggestionItem.textContent = folder;
-      suggestionItem.style.padding = '8px 12px';
-      suggestionItem.style.cursor = 'pointer';
-      suggestionItem.style.transition = 'background-color 0.1s ease';
-      suggestionItem.style.textAlign = 'left';
-
-      // Hover effect
-      suggestionItem.addEventListener('mouseover', () => {
-        suggestionItem.style.backgroundColor = 'var(--background-modifier-hover)';
-      });
-      suggestionItem.addEventListener('mouseout', () => {
-        suggestionItem.style.backgroundColor = '';
-      });
 
       // Click event
       suggestionItem.addEventListener('click', () => {
@@ -101,15 +83,9 @@ export class FolderSuggestions {
     // Append to the setting-item-control for proper positioning
     settingItemControl.appendChild(newContainer);
     
-    // Position below the input field and align to the right
-    newContainer.style.position = 'absolute';
-    newContainer.style.left = ''; // Clear any left value
-    newContainer.style.right = '0'; // Align to the right edge
+    // Position below the input field
     newContainer.style.top = `${rect.height + 4}px`; // Position below input with small gap
     newContainer.style.width = `${rect.width}px`;
-    newContainer.style.maxHeight = '200px';
-    newContainer.style.overflowY = 'auto';
-    newContainer.style.overflowX = 'hidden';
     
     // Force a reflow to ensure styles are applied
     void newContainer.offsetHeight;

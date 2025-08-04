@@ -95,7 +95,8 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       .setName('Add excluded folder')
       .setDesc('Add a new folder to exclude from related notes')
       .addButton(button => button
-        .setButtonText('Add Folder Path')
+        .setIcon('folder-plus')
+        .setTooltip('Add folder path')
         .setCta()
         .onClick(() => {
           this.addNewFolderExclusion(folderExclusionContainer);
@@ -156,14 +157,21 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
             this.plugin.settings.excludedFolders[index].includeChildren = value;
             await this.plugin.saveSettings();
           }))
-        .addButton(button => button
-          .setButtonText('Delete')
-          .setWarning()
-          .onClick(async () => {
-            this.plugin.settings.excludedFolders.splice(index, 1);
-            await this.plugin.saveSettings();
-            this.renderFolderExclusions(container);
-          }));
+        .addButton(button => {
+          button
+            .setIcon('trash-2')
+            .setTooltip('Delete folder exclusion')
+            .onClick(async () => {
+              this.plugin.settings.excludedFolders.splice(index, 1);
+              await this.plugin.saveSettings();
+              this.renderFolderExclusions(container);
+            });
+          
+          // Apply CSS class for styling
+          button.buttonEl.addClass('folder-exclusion-delete-btn');
+          
+          return button;
+        });
       
       // Add description for include children toggle
       const desc = exclusion.includeChildren ? ' (includes subfolders)' : ' (direct folder only)';
