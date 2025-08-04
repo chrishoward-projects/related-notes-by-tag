@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import RelatedNotesPlugin from './main';
+import { FolderSuggestions } from './folder-suggestions';
 
 export interface FolderExclusion {
   path: string;           // Absolute path from vault root
@@ -27,10 +28,12 @@ export const DEFAULT_SETTINGS: RelatedNotesSettings = {
 
 export class RelatedNotesSettingTab extends PluginSettingTab {
   plugin: RelatedNotesPlugin;
+  private folderSuggestions: FolderSuggestions;
 
   constructor(app: App, plugin: RelatedNotesPlugin) {
     super(app, plugin);
     this.plugin = plugin;
+    this.folderSuggestions = new FolderSuggestions(app);
   }
 
   display(): void {
@@ -74,6 +77,30 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
 
+    // Folder Exclusion Section
+    containerEl.createEl('h3', { text: 'Folder Exclusion' });
+    containerEl.createEl('p', {
+      text: 'Exclude files from specific folders when finding related notes. Use absolute paths from vault root (e.g., /Personal/Journal).',
+      cls: 'setting-item-description'
+    });
+
+    // Container for folder exclusion list
+    const folderExclusionContainer = containerEl.createDiv('folder-exclusion-container');
+
+    // Render existing exclusions
+    this.renderFolderExclusions(folderExclusionContainer);
+
+    // Add new folder button
+    new Setting(containerEl)
+      .setName('Add excluded folder')
+      .setDesc('Add a new folder to exclude from related notes')
+      .addButton(button => button
+        .setButtonText('Add Folder Path')
+        .setCta()
+        .onClick(() => {
+          this.addNewFolderExclusion(folderExclusionContainer);
+        }));
+
     // Add static instructions
    containerEl.createEl('h3', { text: 'Activation and usage instructions' });
    const instructionsDiv = containerEl.createDiv('related-notes-instructions');
@@ -88,5 +115,74 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       list.createEl('li', { text: 'Click note name to open in current tab' });
       list.createEl('li', { text: 'Cmd/ctrl-click note name to open note in a new tab' });
       list.createEl('li', { text: 'Click Name/Date to change sort order' });
-    });  }
+    });
+  }
+
+  private renderFolderExclusions(container: HTMLElement): void {
+    container.empty();
+    
+    if (this.plugin.settings.excludedFolders.length === 0) {
+      container.createEl('p', {
+        text: 'No folders excluded yet. Click "Add Folder Path" to create one.',
+        cls: 'setting-item-description'
+      });
+      return;
+    }
+    
+    this.plugin.settings.excludedFolders.forEach((exclusion, index) => {
+      const setting = new Setting(container)
+        .setName(`Folder ${index + 1}`)
+        .addText(text => {
+          text
+            .setPlaceholder('/path/to/folder')
+            .setValue(exclusion.path)
+            .onChange(async (value) => {
+              this.plugin.settings.excludedFolders[index].path = value;
+              await this.plugin.saveSettings();
+            });
+          
+          // Add folder suggestions functionality
+          text.inputEl.addEventListener('input', async () => {
+            const results = await this.folderSuggestions.searchFolders(text.getValue());
+            this.folderSuggestions.displayFolderSuggestions(results);
+          });
+          
+          return text;
+        })
+        .addToggle(toggle => toggle
+          .setTooltip('Include subfolders')
+          .setValue(exclusion.includeChildren)
+          .onChange(async (value) => {
+            this.plugin.settings.excludedFolders[index].includeChildren = value;
+            await this.plugin.saveSettings();
+          }))
+        .addButton(button => button
+          .setButtonText('Delete')
+          .setWarning()
+          .onClick(async () => {
+            this.plugin.settings.excludedFolders.splice(index, 1);
+            await this.plugin.saveSettings();
+            this.renderFolderExclusions(container);
+          }));
+      
+      // Add description for include children toggle
+      const desc = exclusion.includeChildren ? ' (includes subfolders)' : ' (direct folder only)';
+      setting.descEl.createSpan({ 
+        text: `Path: ${exclusion.path || '(empty)'}${desc}`,
+        cls: 'setting-item-description'
+      });
+    });
+  }
+
+  private addNewFolderExclusion(container: HTMLElement): void {
+    const newExclusion: FolderExclusion = {
+      path: '',
+      includeChildren: true,
+      id: Date.now().toString()
+    };
+    
+    this.plugin.settings.excludedFolders.push(newExclusion);
+    this.plugin.saveSettings();
+    this.renderFolderExclusions(container);
+  }
 }
