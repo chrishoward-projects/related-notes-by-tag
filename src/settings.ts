@@ -92,11 +92,11 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
 
     // Add new folder button
     new Setting(containerEl)
-      .setName('Add excluded folder')
+      .setName('Add another exclusion')
       .setDesc('Add a new folder to exclude from related notes')
       .addButton(button => button
         .setIcon('folder-plus')
-        .setTooltip('Add folder path')
+        .setTooltip('Add another folder exclusion')
         .setCta()
         .onClick(() => {
           this.addNewFolderExclusion(folderExclusionContainer);
@@ -131,8 +131,19 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     }
     
     this.plugin.settings.excludedFolders.forEach((exclusion, index) => {
-      const setting = new Setting(container)
-        .setName(`Folder ${index + 1}`)
+      const setting = new Setting(container);
+      
+      // Create description element that we can update dynamically
+      const updateDescription = () => {
+        const desc = exclusion.includeChildren ? ' (selected folder plus subfolders)' : ' (selected folder only)';
+        setting.descEl.empty();
+        setting.descEl.createSpan({ 
+          text: `${index + 1}: ${exclusion.path || '(empty)'}${desc}`,
+          cls: 'setting-item-description'
+        });
+      };
+      
+      setting
         .addText(text => {
           text
             .setPlaceholder('/path/to/folder')
@@ -140,6 +151,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
             .onChange(async (value) => {
               this.plugin.settings.excludedFolders[index].path = value;
               await this.plugin.saveSettings();
+              updateDescription(); // Update description when path changes
             });
           
           // Add folder suggestions functionality
@@ -156,6 +168,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.excludedFolders[index].includeChildren = value;
             await this.plugin.saveSettings();
+            updateDescription(); // Update description when toggle changes
           }))
         .addButton(button => {
           button
@@ -173,12 +186,8 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
           return button;
         });
       
-      // Add description for include children toggle
-      const desc = exclusion.includeChildren ? ' (includes subfolders)' : ' (direct folder only)';
-      setting.descEl.createSpan({ 
-        text: `Path: ${exclusion.path || '(empty)'}${desc}`,
-        cls: 'setting-item-description'
-      });
+      // Set initial description
+      updateDescription();
     });
   }
 
