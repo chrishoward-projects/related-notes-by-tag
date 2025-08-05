@@ -6,9 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.3.0]
+
+### Added
+- **Folder Exclusion Feature**: Exclude files from specific folders when finding related notes
+- Individual folder path configuration with autocomplete suggestions
+- Toggle option to include/exclude subfolders for each exclusion
+- Dynamic descriptions that update in real-time as settings change
+- Add/delete functionality with intuitive icons (folder-plus to add, trash to delete)
+- Full Obsidian theme compatibility with CSS variables
+- Comprehensive path normalization for cross-platform compatibility
+
+### Technical Improvements
+- Added FolderSuggestions class for folder autocomplete functionality
+- Extended RelatedNotesSettings interface with excludedFolders array
+- Implemented robust path normalization and folder exclusion logic
+- Added folder exclusion styles following Obsidian plugin guidelines
+- Comprehensive testing with 100% test coverage on core logic
+
 ## [0.2.19]
 
-## Fixed
+### Fixed
 - Wrong version number showing
 
 ## [0.2.18]

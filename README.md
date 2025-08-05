@@ -21,6 +21,7 @@ If you're a heavy tag user, this plugin makes tags even more useful.
 * **Tag Filtering**: Set minimum tag match requirements (1, 2, or 3+ matching tags)
 * **Matched Tags Display**: Toggle to show which specific tags are shared between notes
 * **Collapsible Groups**: Organize results by tag with expandable/collapsible sections
+* **Folder Exclusion**: Exclude files from specific folders with granular control over subfolders
 
 ### User Experience
 
@@ -56,17 +57,25 @@ If you're a heavy tag user, this plugin makes tags even more useful.
 
 Access plugin settings through Obsidian Settings > Plugin Options > Related Notes by Tag:
 
+### General Settings
 * **Default Sort Mode**: Choose how related notes are sorted by default
 * **Excluded Tags**: Specify tags to ignore when finding related notes (# prefix optional)
 * **Default Group State**: Set whether tag groups start collapsed or expanded
 
+### Folder Exclusion
+* **Exclude Specific Folders**: Add multiple folder paths to exclude from related notes
+* **Autocomplete Support**: Type folder paths with intelligent autocomplete suggestions
+* **Include Subfolders Toggle**: Choose whether to exclude just the folder or include all subfolders
+* **Dynamic Descriptions**: Real-time preview of what will be excluded as you configure settings
+* **Easy Management**: Add folders with one click, delete with intuitive trash icon
+
 ## Perfect For
 
-* **Research**: Find related research notes and sources
-* **Project Management**: Discover related project notes and tasks
-* **Knowledge Building**: Strengthen connections between related concepts
-* **Content Creation**: Find related drafts and reference materials
-* **Learning**: Connect related study notes and resources
+* **Research**: Find related research notes and sources while excluding template or archive folders
+* **Project Management**: Discover related project notes and tasks with control over what folders are included
+* **Knowledge Building**: Strengthen connections between related concepts while filtering out private or draft folders
+* **Content Creation**: Find related drafts and reference materials without cluttering from excluded directories
+* **Learning**: Connect related study notes and resources while keeping personal folders private
 
 ## Requirements
 
