@@ -229,11 +229,13 @@ export class UIRenderer {
     });
     
     if (isExpandMode) {
-      // Up chevron - expand all (show content)
-      svg.createSvg('path', { attr: { d: 'M18 15l-6-6-6 6' } });
+      // chevrons-up-down - expand all (show content)
+      svg.createSvg('path', { attr: { d: 'm7 15 5 5 5-5' } });
+      svg.createSvg('path', { attr: { d: 'm7 9 5-5 5 5' } });
     } else {
-      // Down chevron - collapse all (hide content)
-      svg.createSvg('path', { attr: { d: 'M6 9l6 6 6-6' } });
+      // chevrons-down-up - collapse all (hide content)
+      svg.createSvg('path', { attr: { d: 'm7 20 5-5 5 5' } });
+      svg.createSvg('path', { attr: { d: 'm7 4 5 5 5-5' } });
     }
   }
 
