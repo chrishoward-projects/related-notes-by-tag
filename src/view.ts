@@ -14,6 +14,7 @@ export class RelatedNotesView extends ItemView {
   private previewManager: PreviewManager;
   private uiRenderer: UIRenderer;
   private tagGroupStates: Map<string, boolean> = new Map();
+  private collapseToggleButton: HTMLElement | null = null;
   
   async handleSortChange(mode: 'name'|'date'|'created') {
     this.plugin.settings.defaultSortMode = mode;
@@ -93,6 +94,47 @@ export class RelatedNotesView extends ItemView {
         }
       }
     });
+    
+    this.updateCollapseButtonState();
+  }
+
+  private determineInitialCollapseButtonState(): 'collapse-all' | 'expand-all' {
+    const overallState = this.getOverallCollapseState();
+    return overallState === 'all-collapsed' ? 'expand-all' : 'collapse-all';
+  }
+
+  private getOverallCollapseState(): 'all-collapsed' | 'all-expanded' | 'mixed' {
+    const states = Array.from(this.tagGroupStates.values());
+    
+    if (states.length === 0) return 'all-expanded';
+    if (states.every(collapsed => collapsed)) return 'all-collapsed';
+    if (states.every(collapsed => !collapsed)) return 'all-expanded';
+    return 'mixed';
+  }
+
+  private handleCollapseToggle(action: 'collapse-all' | 'expand-all'): void {
+    const shouldCollapse = action === 'collapse-all';
+    
+    // Update all states in memory
+    this.tagGroupStates.forEach((_, tag) => {
+      this.tagGroupStates.set(tag, shouldCollapse);
+    });
+    
+    // Apply to current DOM
+    const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
+    tagGroups.forEach((group: HTMLElement) => {
+      group.toggleClass('collapsed', shouldCollapse);
+    });
+    
+    // Update button state
+    this.updateCollapseButtonState();
+  }
+
+  private updateCollapseButtonState(): void {
+    if (!this.collapseToggleButton) return;
+    
+    const newState = this.determineInitialCollapseButtonState();
+    this.uiRenderer.updateCollapseButtonIcon(this.collapseToggleButton, newState);
   }
 
   async updateView() {
@@ -153,6 +195,13 @@ export class RelatedNotesView extends ItemView {
       this.plugin.settings.showMatchedTags,
       (showTags) => this.handleTagsToggle(showTags)
     );
+    
+    const initialState = this.determineInitialCollapseButtonState();
+    this.collapseToggleButton = this.uiRenderer.createCollapseToggleButton(
+      actionButtons,
+      initialState,
+      (action) => this.handleCollapseToggle(action)
+    );
   }
 
   private getActiveFile(): TFile | null {
@@ -199,6 +248,8 @@ export class RelatedNotesView extends ItemView {
       tagGroupEl.toggleClass('collapsed', willBeCollapsed);
       
       this.tagGroupStates.set(tag, willBeCollapsed);
+      
+      this.updateCollapseButtonState();
     });
   }
 

@@ -187,6 +187,73 @@ export class UIRenderer {
     return toggleButton;
   }
 
+  createCollapseToggleButton(
+    container: HTMLElement, 
+    initialState: 'collapse-all' | 'expand-all',
+    onToggle: (action: 'collapse-all' | 'expand-all') => void
+  ): HTMLElement {
+    const button = container.createEl('button', {
+      cls: 'related-notes-collapse-toggle clickable-icon',
+      title: initialState === 'collapse-all' ? 'Collapse all groups' : 'Expand all groups',
+      attr: {
+        'aria-label': 'Toggle all tag groups',
+        'role': 'button',
+        'tabindex': '0'
+      }
+    });
+    
+    this.updateCollapseButtonIcon(button, initialState);
+    
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      // Close all dropdowns when toggle button is clicked
+      this.closeAllDropdowns();
+      
+      const currentAction = button.getAttribute('data-action') as 'collapse-all' | 'expand-all';
+      const newAction = currentAction === 'collapse-all' ? 'expand-all' : 'collapse-all';
+      onToggle(newAction);
+    });
+    
+    // Add keyboard support
+    button.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        button.click();
+      }
+    });
+    
+    return button;
+  }
+
+  updateCollapseButtonIcon(button: HTMLElement, action: 'collapse-all' | 'expand-all'): void {
+    button.empty();
+    button.setAttribute('data-action', action);
+    button.setAttribute('title', action === 'collapse-all' ? 'Collapse all groups' : 'Expand all groups');
+    
+    // Create SVG icon
+    const svg = button.createSvg('svg', {
+      attr: { 
+        class: 'svg-icon', 
+        viewBox: '0 0 24 24',
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': '2'
+      }
+    });
+    
+    // Add appropriate icon path (chevron-up for collapse, chevron-down for expand)
+    if (action === 'collapse-all') {
+      svg.createSvg('path', {
+        attr: { d: 'M18 15l-6-6-6 6' }
+      });
+    } else {
+      svg.createSvg('path', {
+        attr: { d: 'M6 9l6 6 6-6' }
+      });
+    }
+  }
+
   cleanup() {
     document.removeEventListener('click', this.handleGlobalClick);
     this.openDropdowns.clear();

@@ -260,3 +260,26 @@
 .folder-exclusion-delete-btn:hover {
   background-color: rgba(255, 0, 0, 0.1) !important;
 }
+
+/* Collapse/Expand All Toggle Button */
+.related-notes-collapse-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  color: var(--icon-color);
+}
+
+.related-notes-collapse-toggle:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.related-notes-collapse-toggle .svg-icon {
+  width: 16px;
+  height: 16px;
+}

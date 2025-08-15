@@ -93,6 +93,8 @@ For the initial implementation, use **Global Tag State** approach because:
 
 ## Implementation Plan
 
+**IMPORTANT**: Develop in NEW branch
+
 ### Phase 1: Core State Management
 
 #### 1. Add State Tracking to View Class
@@ -221,6 +223,8 @@ private setupTagGroupToggle(tagGroupEl: HTMLElement, headerEl: HTMLElement, tag:
   });
 }
 ```
+
+**IMPORTANT** COMMIT
 
 ### Phase 2: Performance Optimization (Optional)
 
