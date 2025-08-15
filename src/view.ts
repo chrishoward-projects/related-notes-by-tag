@@ -98,13 +98,7 @@ export class RelatedNotesView extends ItemView {
   }
 
   private handleExpandCollapseToggle(isExpandMode: boolean): void {
-    // Update button state immediately
-    this.isExpandAllMode = isExpandMode;
-    if (this.expandCollapseButton) {
-      this.uiRenderer.updateExpandCollapseIcon(this.expandCollapseButton, isExpandMode);
-    }
-    
-    // Apply to all current tag groups
+    // Apply the current action to all tag groups
     const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
     
     tagGroups.forEach((group: HTMLElement) => {
@@ -120,6 +114,12 @@ export class RelatedNotesView extends ItemView {
         }
       }
     });
+    
+    // Update button state to opposite mode after performing the action
+    this.isExpandAllMode = !isExpandMode;
+    if (this.expandCollapseButton) {
+      this.uiRenderer.updateExpandCollapseIcon(this.expandCollapseButton, this.isExpandAllMode);
+    }
   }
 
   async updateView() {

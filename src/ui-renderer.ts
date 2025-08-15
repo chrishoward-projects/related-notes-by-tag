@@ -205,9 +205,11 @@ export class UIRenderer {
       // Close all dropdowns when button is clicked
       this.closeAllDropdowns();
       
-      const currentMode = button.getAttribute('data-expand-mode') === 'true';
-      const newMode = !currentMode;
-      onToggle(newMode);
+      // Get current mode and perform that action
+      const currentExpandMode = button.getAttribute('data-expand-mode') === 'true';
+      
+      // Call handler with the action we want to perform
+      onToggle(currentExpandMode);
     });
     
     return button;
