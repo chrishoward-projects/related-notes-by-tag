@@ -14,6 +14,8 @@ export class RelatedNotesView extends ItemView {
   private previewManager: PreviewManager;
   private uiRenderer: UIRenderer;
   private tagGroupStates: Map<string, boolean> = new Map();
+  private isExpandAllMode: boolean = false;
+  private expandCollapseButton: HTMLElement | null = null;
   
   async handleSortChange(mode: 'name'|'date'|'created') {
     this.plugin.settings.defaultSortMode = mode;
@@ -95,6 +97,31 @@ export class RelatedNotesView extends ItemView {
     });
   }
 
+  private handleExpandCollapseToggle(isExpandMode: boolean): void {
+    // Update button state immediately
+    this.isExpandAllMode = isExpandMode;
+    if (this.expandCollapseButton) {
+      this.uiRenderer.updateExpandCollapseIcon(this.expandCollapseButton, isExpandMode);
+    }
+    
+    // Apply to all current tag groups
+    const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
+    
+    tagGroups.forEach((group: HTMLElement) => {
+      const shouldExpand = isExpandMode;
+      group.toggleClass('collapsed', !shouldExpand);
+      
+      // Remove from preserved state if present
+      const headerEl = group.querySelector(`.${CSS_CLASSES.TAG_GROUP_HEADER}`);
+      if (headerEl?.textContent) {
+        const tagName = headerEl.textContent.replace('Notes with tag: ', '');
+        if (this.tagGroupStates.has(tagName)) {
+          this.tagGroupStates.delete(tagName);
+        }
+      }
+    });
+  }
+
   async updateView() {
     if (!this.plugin.app.workspace.layoutReady) {
       return;
@@ -152,6 +179,15 @@ export class RelatedNotesView extends ItemView {
       actionButtons,
       this.plugin.settings.showMatchedTags,
       (showTags) => this.handleTagsToggle(showTags)
+    );
+    
+    // Initialize button state - opposite of defaultGroupState
+    this.isExpandAllMode = this.plugin.settings.defaultGroupState === 'collapsed';
+    
+    this.expandCollapseButton = this.uiRenderer.createExpandCollapseButton(
+      actionButtons,
+      this.isExpandAllMode,
+      (newMode) => this.handleExpandCollapseToggle(newMode)
     );
   }
 
