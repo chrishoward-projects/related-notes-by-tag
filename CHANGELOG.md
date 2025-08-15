@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.0]
+
+### Added
+- **Sidebar State Preservation**: Tag group collapsed/expanded states now persist when clicking outside sidebar or navigating between notes
+- **Expand/Collapse All Button**: New button to quickly expand or collapse all tag groups at once
+- **Obsidian-Style Icons**: Uses official Lucide double chevron icons matching Obsidian's interface
+- **Smart State Management**: Individual tag states preserved within note sessions, bulk operations reset states
+
+### Technical Improvements
+- Implemented global tag state preservation system with `tagGroupStates` Map
+- Added state capture and restoration logic around DOM updates
+- Created clean expand/collapse all toggle independent of individual group states
+- Enhanced UI with proper Obsidian chevron icons and hover states
+- Added comprehensive state cleanup when using bulk operations
+
+### User Experience
+- Tag groups remember their state when switching focus or navigating
+- Bulk expand/collapse operations work reliably on first click
+- Button state reflects intended action (show "Expand All" when groups can be expanded)
+- Individual toggles work independently from bulk operations
+- Smooth integration with existing controls and consistent styling
+
 ## [0.3.1]
 
 ### Changed
