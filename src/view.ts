@@ -13,6 +13,7 @@ export class RelatedNotesView extends ItemView {
   private tagAnalyzer: TagAnalyzer;
   private previewManager: PreviewManager;
   private uiRenderer: UIRenderer;
+  private tagGroupStates: Map<string, boolean> = new Map();
   
   async handleSortChange(mode: 'name'|'date'|'created') {
     this.plugin.settings.defaultSortMode = mode;
@@ -65,11 +66,42 @@ export class RelatedNotesView extends ItemView {
     this.container.empty();
   }
 
+  private captureCurrentState(): void {
+    const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
+    
+    tagGroups.forEach((group: HTMLElement) => {
+      const headerEl = group.querySelector(`.${CSS_CLASSES.TAG_GROUP_HEADER}`);
+      if (headerEl?.textContent) {
+        const tagName = headerEl.textContent.replace('Notes with tag: ', '');
+        const isCollapsed = group.hasClass('collapsed');
+        this.tagGroupStates.set(tagName, isCollapsed);
+      }
+    });
+  }
+
+  private restoreState(): void {
+    const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
+    
+    tagGroups.forEach((group: HTMLElement) => {
+      const headerEl = group.querySelector(`.${CSS_CLASSES.TAG_GROUP_HEADER}`);
+      if (headerEl?.textContent) {
+        const tagName = headerEl.textContent.replace('Notes with tag: ', '');
+        const savedState = this.tagGroupStates.get(tagName);
+        
+        if (savedState !== undefined) {
+          group.toggleClass('collapsed', savedState);
+        }
+      }
+    });
+  }
+
   async updateView() {
     if (!this.plugin.app.workspace.layoutReady) {
       return;
     }
 
+    this.captureCurrentState();
+    
     this.container.empty();
     this.container.addClass(CSS_CLASSES.CONTAINER);
     
@@ -92,6 +124,8 @@ export class RelatedNotesView extends ItemView {
     }
     
     this.renderTagGroups(analysisResult.relatedNotesMap);
+    
+    this.restoreState();
   }
 
   private renderHeader(): HTMLElement {
@@ -134,8 +168,13 @@ export class RelatedNotesView extends ItemView {
 
   private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>): void {
     relatedNotesMap.forEach((files, tag) => {
+      const savedState = this.tagGroupStates.get(tag);
+      const shouldBeCollapsed = savedState !== undefined 
+        ? savedState 
+        : this.plugin.settings.defaultGroupState === 'collapsed';
+      
       const tagGroupEl = this.container.createDiv({ 
-        cls: `${CSS_CLASSES.TAG_GROUP} ${this.plugin.settings.defaultGroupState}`
+        cls: `${CSS_CLASSES.TAG_GROUP} ${shouldBeCollapsed ? 'collapsed' : 'expanded'}`
       });
       
       const headerEl = tagGroupEl.createEl('div', { 
@@ -145,7 +184,7 @@ export class RelatedNotesView extends ItemView {
       
       const listEl = tagGroupEl.createEl('ul', { cls: CSS_CLASSES.NOTES_LIST });
 
-      this.setupTagGroupToggle(tagGroupEl, headerEl);
+      this.setupTagGroupToggle(tagGroupEl, headerEl, tag);
       
       const sortedFiles = this.tagAnalyzer.sortFiles(files, this.plugin.settings.defaultSortMode);
       this.renderFileList(listEl, sortedFiles);
@@ -154,9 +193,12 @@ export class RelatedNotesView extends ItemView {
     });
   }
 
-  private setupTagGroupToggle(tagGroupEl: HTMLElement, headerEl: HTMLElement): void {
+  private setupTagGroupToggle(tagGroupEl: HTMLElement, headerEl: HTMLElement, tag: string): void {
     headerEl.addEventListener('click', () => {
-      tagGroupEl.toggleClass('collapsed', !tagGroupEl.hasClass('collapsed'));
+      const willBeCollapsed = !tagGroupEl.hasClass('collapsed');
+      tagGroupEl.toggleClass('collapsed', willBeCollapsed);
+      
+      this.tagGroupStates.set(tag, willBeCollapsed);
     });
   }
 
