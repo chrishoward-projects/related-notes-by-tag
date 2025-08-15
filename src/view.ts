@@ -104,23 +104,24 @@ export class RelatedNotesView extends ItemView {
   }
 
   private getOverallCollapseState(): 'all-collapsed' | 'all-expanded' | 'mixed' {
-    const states = Array.from(this.tagGroupStates.values());
+    const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
     
-    if (states.length === 0) return 'all-expanded';
-    if (states.every(collapsed => collapsed)) return 'all-collapsed';
-    if (states.every(collapsed => !collapsed)) return 'all-expanded';
+    if (tagGroups.length === 0) return 'all-expanded';
+    
+    const collapsedGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}.collapsed`);
+    
+    if (collapsedGroups.length === tagGroups.length) return 'all-collapsed';
+    if (collapsedGroups.length === 0) return 'all-expanded';
     return 'mixed';
   }
 
   private handleCollapseToggle(action: 'collapse-all' | 'expand-all'): void {
     const shouldCollapse = action === 'collapse-all';
     
-    // Update all states in memory
-    this.tagGroupStates.forEach((_, tag) => {
-      this.tagGroupStates.set(tag, shouldCollapse);
-    });
+    // Clear all preserved individual tag states
+    this.tagGroupStates.clear();
     
-    // Apply to current DOM
+    // Apply to current DOM - just loop through current groups
     const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
     tagGroups.forEach((group: HTMLElement) => {
       group.toggleClass('collapsed', shouldCollapse);
