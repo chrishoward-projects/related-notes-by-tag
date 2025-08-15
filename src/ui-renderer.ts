@@ -229,11 +229,11 @@ export class UIRenderer {
     });
     
     if (isExpandMode) {
-      // Down chevron - expand all
-      svg.createSvg('path', { attr: { d: 'M6 9l6 6 6-6' } });
+      // Up chevron - expand all (show content)
+      svg.createSvg('path', { attr: { d: 'M18 15l-6-6-6 6' } });
     } else {
-      // Right chevron - collapse all  
-      svg.createSvg('path', { attr: { d: 'M9 18l6-6-6-6' } });
+      // Down chevron - collapse all (hide content)
+      svg.createSvg('path', { attr: { d: 'M6 9l6 6 6-6' } });
     }
   }
 
