@@ -108,7 +108,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     instructionsDiv.createEl('p', { text: 'To activate the Related Notes by Tag sidebar:' });
     instructionsDiv.createEl('ul', {}, (list) => {
       list.createEl('li', { text: 'Click the ribbon icon (tag icon) in the top right if visible' });
-      list.createEl('li', { text: 'Or use the command palette: "Related Notes by Tag: Open sidebar"' });
+      list.createEl('li', { text: 'Or use the command palette (cmd/ctrl-P) and search for: "Related Notes by Tag: Open sidebar"' });
     });
     instructionsDiv.createEl('p', { text: 'Usage:' });
     instructionsDiv.createEl('ul', {}, (list) => {

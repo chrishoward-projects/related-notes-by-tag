@@ -1,7 +1,7 @@
 {
 	"id": "related-notes-by-tag",
 	"name": "Related Notes by Tag",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"minAppVersion": "0.15.0",
 	"description": "Displays list of notes in the sidebar that share tags with the currently active note.",
 	"author": "Chris Howard",
