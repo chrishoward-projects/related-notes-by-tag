@@ -212,9 +212,12 @@ export class RelatedNotesView extends ItemView {
       const tagGroupEl = this.container.createDiv({ 
         cls: `${CSS_CLASSES.TAG_GROUP} ${shouldBeCollapsed ? 'collapsed' : 'expanded'}`
       });
-      
+
+      //TODO: Add file count
+      const sortedFiles = this.tagAnalyzer.sortFiles(files, this.plugin.settings.defaultSortMode);
+
       const headerEl = tagGroupEl.createEl('div', { 
-        text: `Notes with tag: ${tag}`, 
+        text: `Notes with tag: ${tag} `+ ' ('+ sortedFiles.length +')', 
         cls: CSS_CLASSES.TAG_GROUP_HEADER 
       });
       
@@ -222,7 +225,6 @@ export class RelatedNotesView extends ItemView {
 
       this.setupTagGroupToggle(tagGroupEl, headerEl, tag);
       
-      const sortedFiles = this.tagAnalyzer.sortFiles(files, this.plugin.settings.defaultSortMode);
       this.renderFileList(listEl, sortedFiles);
       
       tagGroupEl.createEl('hr', { cls: CSS_CLASSES.SEPARATOR });
