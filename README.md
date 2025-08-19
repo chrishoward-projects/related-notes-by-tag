@@ -8,27 +8,15 @@ If you're a heavy tag user, this plugin makes tags even more useful.
 
 ## Features
 
-### Core Functionality
-
 * **Automatic Discovery**: Instantly shows related notes when you open any tagged note
 * **Sidebar Integration**: Clean, unobtrusive sidebar panel that fits seamlessly into your Obsidian workflow
 * **Real-time Updates**: Automatically refreshes when you switch between notes
 * **Tag-based Matching**: Finds notes that share one or more tags with your current note
-
-### Smart Controls
-
 * **Flexible Sorting**: Sort related notes by name, modified date, or creation date
 * **Tag Filtering**: Set minimum tag match requirements (1, 2, or 3+ matching tags)
 * **Matched Tags Display**: Toggle to show which specific tags are shared between notes
 * **Collapsible Groups**: Organize results by tag with expandable/collapsible sections
 * **Folder Exclusion**: Exclude files from specific folders with granular control over subfolders
-
-### User Experience
-
-* **Clean Interface**: Follows Obsidian's design patterns for consistent user experience
-* **Quick Navigation**: Click any note title to open it immediately
-* **Modifier Support**: Cmd/Ctrl+click to open notes in new tabs
-* **Preview Support**: Hover with Cmd/Ctrl held to preview note content
 
 ## Installation
 
@@ -52,6 +40,12 @@ If you're a heavy tag user, this plugin makes tags even more useful.
 3. **Browse Related Notes**: The panel will automatically show notes related to your active note
 4. **Customize Display**: Use the controls to sort, filter, and toggle tag visibility
 5. **Navigate**: Click note titles to open them, or use modifier keys for new tabs
+6. **Quick Navigation**: Click any note title to open it immediately
+7. **Modifier Support**: Cmd/Ctrl+click to open notes in new tabs
+8. **Preview Support**: Hover with Cmd/Ctrl held to preview note content
+
+## USAGE TIP
+If you're finding a tag for a note has too many notes below it, try switching the filter to *2 matches* or *3 matches*. Also, try adding more tags to your current note
 
 ## Settings
 
@@ -69,17 +63,9 @@ Access plugin settings through Obsidian Settings > Plugin Options > Related Note
 * **Dynamic Descriptions**: Real-time preview of what will be excluded as you configure settings
 * **Easy Management**: Add folders with one click, delete with intuitive trash icon
 
-## Perfect For
-
-* **Research**: Find related research notes and sources while excluding template or archive folders
-* **Project Management**: Discover related project notes and tasks with control over what folders are included
-* **Knowledge Building**: Strengthen connections between related concepts while filtering out private or draft folders
-* **Content Creation**: Find related drafts and reference materials without cluttering from excluded directories
-* **Learning**: Connect related study notes and resources while keeping personal folders private
-
 ## Requirements
 
-* Obsidian v0.15.0 or higher
+* Minimum verified on Obsidian v1.9.x
 * Notes with tags (hashtags or YAML frontmatter)
 
 ## Support
