@@ -203,7 +203,11 @@ export class RelatedNotesView extends ItemView {
   }
 
   private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>): void {
-    relatedNotesMap.forEach((files, tag) => {
+    // Convert Map to array and sort by file count (highest to lowest)
+    const sortedTagEntries = Array.from(relatedNotesMap.entries())
+      .sort(([, filesA], [, filesB]) => filesB.length - filesA.length);
+
+    sortedTagEntries.forEach(([tag, files]) => {
       const savedState = this.tagGroupStates.get(tag);
       const shouldBeCollapsed = savedState !== undefined 
         ? savedState 
@@ -213,7 +217,6 @@ export class RelatedNotesView extends ItemView {
         cls: `${CSS_CLASSES.TAG_GROUP} ${shouldBeCollapsed ? 'collapsed' : 'expanded'}`
       });
 
-      //TODO: Add file count
       const sortedFiles = this.tagAnalyzer.sortFiles(files, this.plugin.settings.defaultSortMode);
 
       const headerEl = tagGroupEl.createEl('div', { 
