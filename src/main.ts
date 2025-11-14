@@ -72,7 +72,11 @@ export default class RelatedNotesPlugin extends Plugin {
   private getView(): RelatedNotesView | null {
     const leaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_BY_TAG_VIEW_TYPE);
     if (leaves.length > 0) {
-      return leaves[0].view as RelatedNotesView;
+      const view = leaves[0].view;
+      // Type guard: ensure the view is actually a RelatedNotesView instance
+      if (view instanceof RelatedNotesView && typeof view.updateView === 'function') {
+        return view as RelatedNotesView;
+      }
     }
     return null;
   }
