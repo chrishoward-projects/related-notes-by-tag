@@ -96,16 +96,10 @@ export class PreviewManager extends Component {
 
   private applyPopupStyles(position: { left: number; top: number }): void {
     if (!this.previewPopup) return;
-    
-    Object.assign(this.previewPopup.style, {
-      position: 'fixed',
-      left: `${position.left}px`,
-      top: `${position.top}px`,
-      zIndex: '9999',
-      width: `${DIMENSIONS.PREVIEW_POPUP_WIDTH}px`,
-      maxHeight: DIMENSIONS.PREVIEW_MAX_HEIGHT,
-      overflowY: 'auto'
-    });
+
+    // Only set dynamic position values; static styles are in styles.css
+    this.previewPopup.style.left = `${position.left}px`;
+    this.previewPopup.style.top = `${position.top}px`;
   }
 
   private renderPreviewContent(file: TFile): void {

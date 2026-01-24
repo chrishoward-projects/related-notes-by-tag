@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace hardcoded colours with CSS variables for theme compatibility
 - Use Setting API .setHeading() for settings section headers
 - Fix sentence case in settings headings ("Folder exclusion" not "Folder Exclusion")
+- Move static preview popup styles from JavaScript to CSS
 
 ## [0.4.4]
 
