@@ -48,8 +48,6 @@ export class FolderSuggestions {
     
     // Set position:relative on the parent element to make absolute positioning work
     (settingItemControl as HTMLElement).style.position = 'relative';
-    
-    console.log('Setting up suggestions container with parent:', settingItemControl);
 
     // Create a new suggestions container
     const newContainer = document.createElement('div');
@@ -89,16 +87,7 @@ export class FolderSuggestions {
     
     // Force a reflow to ensure styles are applied
     void newContainer.offsetHeight;
-    
-    // Double-check that right alignment is maintained
-    console.log('Container styles after positioning:', {
-      position: newContainer.style.position,
-      right: newContainer.style.right,
-      left: newContainer.style.left,
-      top: newContainer.style.top,
-      width: newContainer.style.width
-    });
-    
+
     // Add click outside listener
     const clickOutsideHandler = (e: MouseEvent) => {
       if (!newContainer.contains(e.target as Node) && e.target !== activeElement) {
