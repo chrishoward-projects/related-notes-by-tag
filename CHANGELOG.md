@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix sentence case in settings headings ("Folder exclusion" not "Folder Exclusion")
 - Move static preview popup styles from JavaScript to CSS
 - Remove debug console.log statements from folder suggestions
+- Use Obsidian's normalizePath() instead of custom implementation
 
 ## [0.4.4]
 

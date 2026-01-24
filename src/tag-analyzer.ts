@@ -1,4 +1,4 @@
-import { TFile, getAllTags, App } from 'obsidian';
+import { TFile, getAllTags, App, normalizePath } from 'obsidian';
 import { RelatedNotesSettings } from './settings';
 
 export interface FileWithMatchedTags {
@@ -103,12 +103,11 @@ export class TagAnalyzer {
   }
 
   private isFileInExcludedFolder(file: TFile, settings: RelatedNotesSettings): boolean {
-    const filePath = file.path;
-    
+    const normalizedFilePath = normalizePath(file.path);
+
     return settings.excludedFolders.some(exclusion => {
-      const normalizedExclusionPath = this.normalizePath(exclusion.path);
-      const normalizedFilePath = this.normalizePath(filePath);
-      
+      const normalizedExclusionPath = normalizePath(exclusion.path);
+
       if (exclusion.includeChildren) {
         // Check if file is in folder or any subfolder
         return normalizedFilePath.startsWith(normalizedExclusionPath + '/') ||
@@ -119,10 +118,5 @@ export class TagAnalyzer {
         return fileDir === normalizedExclusionPath;
       }
     });
-  }
-
-  private normalizePath(path: string): string {
-    // Remove leading/trailing slashes, handle edge cases
-    return path.replace(/^\/+|\/+$/g, '').replace(/\/+/g, '/');
   }
 }
