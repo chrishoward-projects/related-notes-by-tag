@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add role attributes (menu, menuitem, button) for proper screen reader context
 - Add Escape key support to close dropdowns and return focus
 - Add focus-visible styles for keyboard navigation visibility
+- Replace hardcoded colours with CSS variables for theme compatibility
 
 ## [0.4.4]
 

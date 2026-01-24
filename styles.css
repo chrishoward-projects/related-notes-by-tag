@@ -105,7 +105,7 @@
   background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-s);
   z-index: 1000;
   display: none !important; /* Ensure it's hidden by default */
   min-width: 160px;
@@ -142,10 +142,10 @@
 }
 
 .related-notes-instructions {
-  background:#f9f9f9;
-  padding:15px;
-  border:1px #eee solid;
-  border-radius: 5px;
+  background-color: var(--background-secondary);
+  padding: 15px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
 }
 
 .related-notes-instructions p {
@@ -160,7 +160,7 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
   padding: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-l);
   opacity: 0;
   transition: opacity 0.1s ease-in-out;
   box-sizing: border-box; /* Include padding and border in the element's total width and height */
@@ -258,7 +258,7 @@
 }
 
 .folder-exclusion-delete-btn:hover {
-  background-color: rgba(255, 0, 0, 0.1) !important;
+  background-color: var(--background-modifier-error-hover) !important;
 }
 
 /* Expand/Collapse All Button */
