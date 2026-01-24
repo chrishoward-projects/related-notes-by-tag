@@ -195,7 +195,7 @@ export class RelatedNotesView extends ItemView {
     const activeFile = this.app.workspace.getActiveFile();
     
     if (!activeFile || !(activeFile instanceof TFile)) {
-      this.container.createEl('p', { text: 'No active note or not a markdown file.' });
+      this.container.createEl('p', { text: 'No active note selected.' });
       return null;
     }
     

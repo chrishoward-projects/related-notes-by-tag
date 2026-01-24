@@ -134,7 +134,7 @@ export default class RelatedNotesPlugin extends Plugin {
         // The view instance is created by the registerView callback
         // and updateView will be called by its onOpen method.
     } else {
-        new Notice('Could not Open Related Notes by Tag sidebar: No available leaf.');
+        new Notice('Could not open sidebar: no available leaf.');
     }
   }
 }

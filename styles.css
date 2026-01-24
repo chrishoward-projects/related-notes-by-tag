@@ -223,6 +223,10 @@
 
 /* Folder Exclusion Styles */
 
+.folder-exclusion-setting-control {
+  position: relative;
+}
+
 /* Folder Suggestions Dropdown */
 .folder-suggestions-container {
   position: absolute;

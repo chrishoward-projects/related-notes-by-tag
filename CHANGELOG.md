@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.5]
 
+### Added
+- Install and configure eslint-plugin-obsidianmd for automated guideline checking
+
 ### Fixed
 - Add ARIA labels to all icon buttons for screen reader accessibility
 - Add aria-haspopup and aria-expanded attributes to dropdown triggers

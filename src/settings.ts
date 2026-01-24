@@ -46,8 +46,8 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       .setDesc('Default sort method for related notes')
       .addDropdown(dropdown => dropdown
         .addOption('name', 'Name')
-        .addOption('date', 'Date Edited')
-        .addOption('created', 'Date Created')
+        .addOption('date', 'Date edited')
+        .addOption('created', 'Date created')
         .setValue(this.plugin.settings.defaultSortMode)
         .onChange(async (value: 'name' | 'date' | 'created') => {
           this.plugin.settings.defaultSortMode = value;
@@ -58,7 +58,8 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       .setName('Excluded tags')
       .setDesc('Comma-separated list of tags to exclude from related notes (# prefix optional)')
       .addText(text => text
-        .setPlaceholder('e.g., ignore, draft, #private')
+        // eslint-disable-next-line obsidianmd/ui/sentence-case
+        .setPlaceholder('e.g. ignore, draft, #private')
         .setValue(this.plugin.settings.excludedTags)
         .onChange(async (value) => {
           this.plugin.settings.excludedTags = value;
@@ -107,17 +108,17 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       .setHeading();
 
     const instructionsDiv = containerEl.createDiv('related-notes-instructions');
-    instructionsDiv.createEl('p', { text: 'To activate the Related Notes by Tag sidebar:' });
+    instructionsDiv.createEl('p', { text: 'To activate the sidebar:' });
     instructionsDiv.createEl('ul', {}, (list) => {
       list.createEl('li', { text: 'Click the ribbon icon (tag icon) in the top right if visible' });
-      list.createEl('li', { text: 'Or use the command palette (cmd/ctrl-P on desktop, pull down from top of Obsidian on mobile) and search for: "Related Notes by Tag: Open sidebar"' });
+      list.createEl('li', { text: 'Or use the command palette (Cmd/Ctrl+P) and search for "open sidebar"' });
     });
     instructionsDiv.createEl('p', { text: 'Usage:' });
     instructionsDiv.createEl('ul', {}, (list) => {
       list.createEl('li', { text: 'Click tag group header to expand/collapse group' });
       list.createEl('li', { text: 'Click note name to open in current tab' });
       list.createEl('li', { text: 'Cmd/ctrl-click note name to open note in a new tab' });
-      list.createEl('li', { text: 'Click Name/Date to change sort order' });
+      list.createEl('li', { text: 'Use the sort dropdown to change sort order' });
     });
   }
 
@@ -126,7 +127,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     
     if (this.plugin.settings.excludedFolders.length === 0) {
       container.createEl('p', {
-        text: 'No folders excluded yet. Click "Add Folder Path" to create one.',
+        text: 'No folders excluded yet. Use the button below to add one.',
         cls: 'setting-item-description'
       });
       return;

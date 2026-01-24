@@ -46,8 +46,8 @@ export class FolderSuggestions {
       return;
     }
     
-    // Set position:relative on the parent element to make absolute positioning work
-    (settingItemControl as HTMLElement).style.position = 'relative';
+    // Add class for positioning context (styles in styles.css)
+    (settingItemControl as HTMLElement).addClass('folder-exclusion-setting-control');
 
     // Create a new suggestions container
     const newContainer = document.createElement('div');
