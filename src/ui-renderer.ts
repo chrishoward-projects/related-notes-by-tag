@@ -11,6 +11,7 @@ export interface DropdownConfig {
   options: DropdownOption[];
   onItemClick: (value: string | number) => void;
   containerClass?: string;
+  ariaLabel: string;
 }
 
 export class UIRenderer {
@@ -54,7 +55,12 @@ export class UIRenderer {
     }
     
     const trigger = dropdownContainer.createEl('button', {
-      cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} clickable-icon`
+      cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} clickable-icon`,
+      attr: {
+        'aria-label': config.ariaLabel,
+        'aria-haspopup': 'true',
+        'aria-expanded': 'false'
+      }
     });
     // Create SVG element from icon string using DOM parser
     const parser = new DOMParser();
@@ -84,15 +90,19 @@ export class UIRenderer {
     
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
-      
+
       // Close all other dropdowns first
       this.closeAllDropdowns();
-      
+
       // Then toggle this one
       menu.classList.toggle(CSS_CLASSES.DROPDOWN_VISIBLE);
-      
+
+      // Update aria-expanded state
+      const isExpanded = menu.classList.contains(CSS_CLASSES.DROPDOWN_VISIBLE);
+      trigger.setAttribute('aria-expanded', isExpanded.toString());
+
       // Track this dropdown if it's now open
-      if (menu.classList.contains(CSS_CLASSES.DROPDOWN_VISIBLE)) {
+      if (isExpanded) {
         this.openDropdowns.add(dropdownContainer);
       } else {
         this.openDropdowns.delete(dropdownContainer);
@@ -117,7 +127,8 @@ export class UIRenderer {
       icon: ICONS.SORT,
       options,
       onItemClick: (value) => onSortChange(value as 'name' | 'date' | 'created'),
-      containerClass: CSS_CLASSES.SORT_CONTROLS
+      containerClass: CSS_CLASSES.SORT_CONTROLS,
+      ariaLabel: 'Sort notes'
     });
   }
 
@@ -136,7 +147,8 @@ export class UIRenderer {
       icon: ICONS.FILTER,
       options,
       onItemClick: (value) => onFilterChange(value as 1 | 2 | 3),
-      containerClass: CSS_CLASSES.FILTER_CONTROLS
+      containerClass: CSS_CLASSES.FILTER_CONTROLS,
+      ariaLabel: 'Filter by tag count'
     });
   }
 
@@ -154,9 +166,14 @@ export class UIRenderer {
     isActive: boolean, 
     onToggle: (showTags: boolean) => void
   ): HTMLElement {
+    const ariaLabel = isActive ? 'Hide matched tags' : 'Show matched tags';
     const toggleButton = container.createEl('button', {
       cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} ${CSS_CLASSES.TAGS_TOGGLE_CONTROLS} clickable-icon ${isActive ? CSS_CLASSES.DROPDOWN_ITEM_ACTIVE : ''}`,
-      title: isActive ? 'Hide matched tags' : 'Show matched tags'
+      attr: {
+        title: ariaLabel,
+        'aria-label': ariaLabel,
+        'aria-pressed': isActive.toString()
+      }
     });
     
     // Create SVG element from icon string using DOM parser
@@ -167,20 +184,23 @@ export class UIRenderer {
     
     toggleButton.addEventListener('click', (e) => {
       e.stopPropagation();
-      
+
       // Close all dropdowns when toggle button is clicked
       this.closeAllDropdowns();
-      
+
       const newState = !isActive;
       onToggle(newState);
-      
-      // Update button appearance
+
+      // Update button appearance and accessibility attributes
+      const newAriaLabel = newState ? 'Hide matched tags' : 'Show matched tags';
+      toggleButton.setAttribute('aria-label', newAriaLabel);
+      toggleButton.setAttribute('aria-pressed', newState.toString());
+      toggleButton.title = newAriaLabel;
+
       if (newState) {
         toggleButton.addClass(CSS_CLASSES.DROPDOWN_ITEM_ACTIVE);
-        toggleButton.title = 'Hide matched tags';
       } else {
         toggleButton.removeClass(CSS_CLASSES.DROPDOWN_ITEM_ACTIVE);
-        toggleButton.title = 'Show matched tags';
       }
     });
     
@@ -192,9 +212,13 @@ export class UIRenderer {
     isExpandMode: boolean,
     onToggle: (newMode: boolean) => void
   ): HTMLElement {
+    const buttonLabel = isExpandMode ? 'Expand all groups' : 'Collapse all groups';
     const button = container.createEl('button', {
       cls: 'related-notes-expand-collapse clickable-icon',
-      title: isExpandMode ? 'Expand all groups' : 'Collapse all groups'
+      attr: {
+        title: buttonLabel,
+        'aria-label': buttonLabel
+      }
     });
     
     this.updateExpandCollapseIcon(button, isExpandMode);
@@ -217,8 +241,10 @@ export class UIRenderer {
 
   updateExpandCollapseIcon(button: HTMLElement, isExpandMode: boolean): void {
     button.empty();
+    const label = isExpandMode ? 'Expand all groups' : 'Collapse all groups';
     button.setAttribute('data-expand-mode', isExpandMode.toString());
-    button.setAttribute('title', isExpandMode ? 'Expand all groups' : 'Collapse all groups');
+    button.setAttribute('title', label);
+    button.setAttribute('aria-label', label);
     
     const svg = button.createSvg('svg', {
       attr: { 
