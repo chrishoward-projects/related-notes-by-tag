@@ -283,3 +283,28 @@
   width: 16px;
   height: 16px;
 }
+
+/* Focus visible styles for keyboard accessibility */
+.related-notes-container button:focus-visible,
+.related-notes-container .dropdown-trigger:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-s);
+}
+
+.related-notes-tag-group-header:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-s);
+}
+
+.dropdown-item:focus-visible {
+  outline: none;
+  background-color: var(--background-modifier-hover);
+}
+
+.related-note-link:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 1px;
+  border-radius: var(--radius-s);
+}

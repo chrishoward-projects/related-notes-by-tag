@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add keyboard navigation (Enter/Space) to dropdown items and tag group headers
 - Add role attributes (menu, menuitem, button) for proper screen reader context
 - Add Escape key support to close dropdowns and return focus
+- Add focus-visible styles for keyboard navigation visibility
 
 ## [0.4.4]
 
