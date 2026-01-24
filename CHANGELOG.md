@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add ARIA labels to all icon buttons for screen reader accessibility
 - Add aria-haspopup and aria-expanded attributes to dropdown triggers
 - Add aria-pressed attribute to toggle buttons
+- Add keyboard navigation (Enter/Space) to dropdown items and tag group headers
+- Add role attributes (menu, menuitem, button) for proper screen reader context
+- Add Escape key support to close dropdowns and return focus
 
 ## [0.4.4]
 

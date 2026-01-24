@@ -68,23 +68,47 @@ export class UIRenderer {
     const svgElement = svgDoc.documentElement;
     trigger.appendChild(svgElement);
     
-    const menu = dropdownContainer.createDiv(CSS_CLASSES.DROPDOWN_MENU);
+    const menu = dropdownContainer.createDiv({
+      cls: CSS_CLASSES.DROPDOWN_MENU,
+      attr: { role: 'menu' }
+    });
     
     config.options.forEach(option => {
       const item = menu.createEl('div', {
         cls: `${CSS_CLASSES.DROPDOWN_ITEM} ${option.isActive ? CSS_CLASSES.DROPDOWN_ITEM_ACTIVE : ''}`,
-        text: option.label
+        text: option.label,
+        attr: {
+          tabindex: '0',
+          role: 'menuitem'
+        }
       });
-      
-      item.addEventListener('click', () => {
+
+      const selectItem = () => {
         config.onItemClick(option.value);
         menu.classList.remove(CSS_CLASSES.DROPDOWN_VISIBLE);
-        
+        trigger.setAttribute('aria-expanded', 'false');
+
         // Update active states
-        menu.querySelectorAll(`.${CSS_CLASSES.DROPDOWN_ITEM}`).forEach(el => 
+        menu.querySelectorAll(`.${CSS_CLASSES.DROPDOWN_ITEM}`).forEach(el =>
           el.classList.remove(CSS_CLASSES.DROPDOWN_ITEM_ACTIVE)
         );
         item.classList.add(CSS_CLASSES.DROPDOWN_ITEM_ACTIVE);
+
+        // Return focus to trigger
+        trigger.focus();
+      };
+
+      item.addEventListener('click', selectItem);
+
+      item.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectItem();
+        } else if (e.key === 'Escape') {
+          menu.classList.remove(CSS_CLASSES.DROPDOWN_VISIBLE);
+          trigger.setAttribute('aria-expanded', 'false');
+          trigger.focus();
+        }
       });
     });
     

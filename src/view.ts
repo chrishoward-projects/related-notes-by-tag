@@ -219,9 +219,14 @@ export class RelatedNotesView extends ItemView {
 
       const sortedFiles = this.tagAnalyzer.sortFiles(files, this.plugin.settings.defaultSortMode);
 
-      const headerEl = tagGroupEl.createEl('div', { 
-        text: `Notes with tag: ${tag} `+ ' ('+ sortedFiles.length +')', 
-        cls: CSS_CLASSES.TAG_GROUP_HEADER 
+      const headerEl = tagGroupEl.createEl('div', {
+        text: `Notes with tag: ${tag} ` + ' (' + sortedFiles.length + ')',
+        cls: CSS_CLASSES.TAG_GROUP_HEADER,
+        attr: {
+          tabindex: '0',
+          role: 'button',
+          'aria-expanded': shouldBeCollapsed ? 'false' : 'true'
+        }
       });
       
       const listEl = tagGroupEl.createEl('ul', { cls: CSS_CLASSES.NOTES_LIST });
@@ -235,11 +240,20 @@ export class RelatedNotesView extends ItemView {
   }
 
   private setupTagGroupToggle(tagGroupEl: HTMLElement, headerEl: HTMLElement, tag: string): void {
-    headerEl.addEventListener('click', () => {
+    const toggleGroup = () => {
       const willBeCollapsed = !tagGroupEl.hasClass('collapsed');
       tagGroupEl.toggleClass('collapsed', willBeCollapsed);
-      
+      headerEl.setAttribute('aria-expanded', (!willBeCollapsed).toString());
       this.tagGroupStates.set(tag, willBeCollapsed);
+    };
+
+    headerEl.addEventListener('click', toggleGroup);
+
+    headerEl.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleGroup();
+      }
     });
   }
 
