@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Escape key support to close dropdowns and return focus
 - Add focus-visible styles for keyboard navigation visibility
 - Replace hardcoded colours with CSS variables for theme compatibility
+- Use Setting API .setHeading() for settings section headers
+- Fix sentence case in settings headings ("Folder exclusion" not "Folder Exclusion")
 
 ## [0.4.4]
 

@@ -78,11 +78,10 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
         }));
 
     // Folder Exclusion Section
-    containerEl.createEl('h3', { text: 'Folder Exclusion' });
-    containerEl.createEl('p', {
-      text: 'Exclude files from specific folders when finding related notes. Use absolute paths from vault root (e.g., /Personal/Journal).',
-      cls: 'setting-item-description'
-    });
+    new Setting(containerEl)
+      .setName('Folder exclusion')
+      .setDesc('Exclude files from specific folders when finding related notes. Use absolute paths from vault root (e.g., /Personal/Journal).')
+      .setHeading();
 
     // Container for folder exclusion list
     const folderExclusionContainer = containerEl.createDiv('folder-exclusion-container');
@@ -103,8 +102,11 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
         }));
 
     // Add static instructions
-   containerEl.createEl('h3', { text: 'Activation and usage instructions' });
-   const instructionsDiv = containerEl.createDiv('related-notes-instructions');
+    new Setting(containerEl)
+      .setName('Activation and usage')
+      .setHeading();
+
+    const instructionsDiv = containerEl.createDiv('related-notes-instructions');
     instructionsDiv.createEl('p', { text: 'To activate the Related Notes by Tag sidebar:' });
     instructionsDiv.createEl('ul', {}, (list) => {
       list.createEl('li', { text: 'Click the ribbon icon (tag icon) in the top right if visible' });
