@@ -21,7 +21,7 @@ export default class RelatedNotesPlugin extends Plugin {
       id: 'open-related-notes-panel',
       name: 'Open sidebar',
       callback: () => {
-        this.activateView();
+        void this.activateView();
       },
     });
 
@@ -60,7 +60,7 @@ export default class RelatedNotesPlugin extends Plugin {
 
     // Layout ready handler
     this.app.workspace.onLayoutReady(() => {
-      this.initializePanelInSidebar();
+      void this.initializePanelInSidebar();
     });
 
   }
@@ -115,7 +115,7 @@ export default class RelatedNotesPlugin extends Plugin {
     // Check if view is already open
     const existingLeaves = this.app.workspace.getLeavesOfType(RELATED_NOTES_BY_TAG_VIEW_TYPE);
     if (existingLeaves.length > 0) {
-      this.app.workspace.revealLeaf(existingLeaves[0]);
+      await this.app.workspace.revealLeaf(existingLeaves[0]);
       return;
     }
 
@@ -130,7 +130,7 @@ export default class RelatedNotesPlugin extends Plugin {
             type: RELATED_NOTES_BY_TAG_VIEW_TYPE,
             active: true,
         });
-        this.app.workspace.revealLeaf(leaf);
+        await this.app.workspace.revealLeaf(leaf);
         // The view instance is created by the registerView callback
         // and updateView will be called by its onOpen method.
     } else {

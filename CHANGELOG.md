@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.7]
+
+### Fixed
+- Resolve async/promise-handling issues flagged by Obsidian's plugin review scan: unawaited promises in view updates, settings saves, and file-opening now properly `await`ed or explicitly marked with `void` where fire-and-forget is intentional; DOM event listener callback no longer mismatched with an async return type
+
 ## [0.4.6]
 
 ### Fixed

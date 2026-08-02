@@ -158,9 +158,11 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
             });
           
           // Add folder suggestions functionality
-          text.inputEl.addEventListener('input', async () => {
-            const results = await this.folderSuggestions.searchFolders(text.getValue());
-            this.folderSuggestions.displayFolderSuggestions(results);
+          text.inputEl.addEventListener('input', () => {
+            void (async () => {
+              const results = await this.folderSuggestions.searchFolders(text.getValue());
+              this.folderSuggestions.displayFolderSuggestions(results);
+            })();
           });
           
           return text;
@@ -202,7 +204,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     };
     
     this.plugin.settings.excludedFolders.push(newExclusion);
-    this.plugin.saveSettings();
+    void this.plugin.saveSettings();
     this.renderFolderExclusions(container);
   }
 }

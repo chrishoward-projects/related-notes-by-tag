@@ -20,19 +20,19 @@ export class RelatedNotesView extends ItemView {
   async handleSortChange(mode: 'name'|'date'|'created') {
     this.plugin.settings.defaultSortMode = mode;
     await this.plugin.saveSettings();
-    this.updateView();
+    await this.updateView();
   }
 
   async handleFilterChange(filterMode: 1|2|3) {
     this.plugin.settings.defaultFilterMode = filterMode;
     await this.plugin.saveSettings();
-    this.updateView();
+    await this.updateView();
   }
 
   async handleTagsToggle(showTags: boolean) {
     this.plugin.settings.showMatchedTags = showTags;
     await this.plugin.saveSettings();
-    this.updateView();
+    await this.updateView();
   }
 
   constructor(leaf: WorkspaceLeaf, plugin: RelatedNotesPlugin) {
@@ -59,7 +59,7 @@ export class RelatedNotesView extends ItemView {
     this.container = this.contentEl;
     this.container.empty();
     this.container.addClass(CSS_CLASSES.CONTAINER);
-    this.updateView();
+    await this.updateView();
   }
 
   async onClose() {
@@ -166,19 +166,19 @@ export class RelatedNotesView extends ItemView {
     this.uiRenderer.createSortDropdown(
       actionButtons,
       this.plugin.settings.defaultSortMode,
-      (mode) => this.handleSortChange(mode)
+      (mode) => void this.handleSortChange(mode)
     );
     
     this.uiRenderer.createFilterDropdown(
       actionButtons,
       this.plugin.settings.defaultFilterMode,
-      (mode) => this.handleFilterChange(mode)
+      (mode) => void this.handleFilterChange(mode)
     );
     
     this.uiRenderer.createTagsToggleButton(
       actionButtons,
       this.plugin.settings.showMatchedTags,
-      (showTags) => this.handleTagsToggle(showTags)
+      (showTags) => void this.handleTagsToggle(showTags)
     );
     
     // Initialize button state - opposite of defaultGroupState
@@ -310,9 +310,9 @@ export class RelatedNotesView extends ItemView {
     linkEl.addEventListener('click', (evt: MouseEvent) => {
       evt.preventDefault();
       if (evt.ctrlKey || evt.metaKey) {
-        this.app.workspace.getLeaf('tab').openFile(file, { active: true });
+        void this.app.workspace.getLeaf('tab').openFile(file, { active: true });
       } else {
-        this.app.workspace.getLeaf().openFile(file, { active: true });
+        void this.app.workspace.getLeaf().openFile(file, { active: true });
       }
     });
   }
