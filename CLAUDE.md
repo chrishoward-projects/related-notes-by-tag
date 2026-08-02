@@ -52,11 +52,11 @@ When making changes, ensure compliance with Obsidian submission guidelines:
 
 ### Version Management
 
-**IMPORTANT**: After completing any task that adds features, fixes bugs, or makes changes:
+See RELEASE.md for the full process. In short, after completing any task that adds features, fixes bugs, or makes changes:
 1. Update CHANGELOG.md with the changes made
-2. Run `npm version patch` to bump the version and update manifest.json
-3. Commit the version bump
-4. This maintains proper version history and prepares for releases
+2. Run `npm run update-version` to bump the version, sync manifest.json/versions.json, and rebuild. Do NOT use `npm version patch` — it causes dual commits and fails because main.js is gitignored.
+3. Commit everything (code changes + version bump) as a single commit
+4. No tags or GitHub releases are created during development — those happen separately via `npm run release` when ready to publish
 
 ## Plugin Manifest
 
