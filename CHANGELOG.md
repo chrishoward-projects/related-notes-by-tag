@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.6]
+
+### Fixed
+- Fix conflict with Excalidraw plugin's hamburger menu: unscoped CSS class names (`dropdown-menu`, `action-buttons`, `sort-controls`, `filter-controls`, `tags-toggle-controls`, `dropdown-trigger`, `dropdown-item`, `dropdown-container`) collided with identically-named classes from other plugins in Obsidian's shared global stylesheet; all classes now consistently prefixed with `related-notes-`
+
 ## [0.4.5]
 
 ### Added
