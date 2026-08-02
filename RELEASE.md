@@ -51,14 +51,15 @@ npm run release
 This will:
 - Check for uncommitted changes (fails if any)
 - Build the plugin
-- Create and push a git tag (e.g., 0.2.12)
-- Create a GitHub release (as draft)
+- Push the current branch (so the repo's committed `manifest.json` matches the release — Obsidian's update checker reads `manifest.json` from the default branch, not from release assets)
+- Create and push a git tag matching `package.json`'s version (e.g., `0.4.6`, no `v` prefix — required by Obsidian's plugin release format)
+- Create a GitHub release (as draft) titled with the bare version number
+- Generate release notes automatically from `CHANGELOG.md`, covering every version entry back to the previous release (so a release that skips an intermediate version, e.g. 0.4.4 → 0.4.6, still includes 0.4.5's entries)
 - Upload required files (`main.js`, `manifest.json`, `styles.css`)
-- Create and upload zip file
 
 ### 2. Publish Release
 Go to GitHub releases and:
-- Edit the release notes
+- Review the auto-generated release notes, editing if needed
 - Publish the draft release when ready
 
 ## Manual Release (if needed)
@@ -67,16 +68,16 @@ If the release script fails:
 
 1. Ensure all changes are committed
 2. Run `npm run build`
-3. Manually create git tag: `git tag 0.2.12 && git push origin 0.2.12`
-4. Create GitHub release manually
-5. Upload `main.js`, `manifest.json`, and `styles.css`
+3. Manually create git tag: `git tag 0.4.6 && git push origin-projects 0.4.6`
+4. Create GitHub release manually, titled with the bare version number (e.g. `0.4.6`, no `v` prefix)
+5. Paste in the relevant `CHANGELOG.md` entries as the release notes
+6. Upload `main.js`, `manifest.json`, and `styles.css`
 
 ## Files Included in Release
 
 - `main.js` - Compiled plugin code
 - `manifest.json` - Plugin metadata
 - `styles.css` - Plugin styles
-- `{version}.zip` - Zip file containing all above files
 
 ## Key Changes from Previous Process
 
