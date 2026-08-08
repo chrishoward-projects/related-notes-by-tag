@@ -70,7 +70,7 @@ Access plugin settings through Obsidian Settings > Plugin Options > Related Note
 
 ## Support
 
-Found a bug or have a feature request? Please open an issue on [GitHub](https://github.com/chrishoward/related-notes-by-tag).
+Found a bug or have a feature request? Please open an issue on [GitHub](https://github.com/chrishoward-projects/related-notes-by-tag).
 
 ***
 

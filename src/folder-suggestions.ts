@@ -59,7 +59,7 @@ export class FolderSuggestions {
       // Click event
       suggestionItem.addEventListener('click', () => {
         // Set the value of the input field
-        (activeElement as HTMLInputElement).value = folder;
+        activeElement.value = folder;
 
         // Trigger an input event to ensure onChange handlers fire
         const event = new Event('input', { bubbles: true });

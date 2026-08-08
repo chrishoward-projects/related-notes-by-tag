@@ -75,7 +75,7 @@ export default class RelatedNotesPlugin extends Plugin {
       const view = leaves[0].view;
       // Type guard: ensure the view is actually a RelatedNotesView instance
       if (view instanceof RelatedNotesView && typeof view.updateView === 'function') {
-        return view as RelatedNotesView;
+        return view;
       }
     }
     return null;

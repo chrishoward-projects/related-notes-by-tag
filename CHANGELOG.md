@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.10]
+
+### Changed
+- Minor DOM API cleanup flagged by Obsidian's plugin review scan: use `createDiv()` instead of `createEl('div', ...)` in the dropdown menu item and tag group header, and drop two type assertions (`as HTMLInputElement`, `as RelatedNotesView`) that were already redundant since the value was narrowed by an earlier `instanceof` guard
+- Fix README support link pointing at `chrishoward/related-notes-by-tag`; the actual repository is under `chrishoward-projects/related-notes-by-tag`
+
 ## [0.4.9]
 
 ### Fixed

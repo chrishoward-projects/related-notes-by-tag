@@ -74,7 +74,7 @@ export class UIRenderer {
     });
     
     config.options.forEach(option => {
-      const item = menu.createEl('div', {
+      const item = menu.createDiv({
         cls: `${CSS_CLASSES.DROPDOWN_ITEM} ${option.isActive ? CSS_CLASSES.DROPDOWN_ITEM_ACTIVE : ''}`,
         text: option.label,
         attr: {

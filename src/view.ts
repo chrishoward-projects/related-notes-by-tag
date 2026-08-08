@@ -219,7 +219,7 @@ export class RelatedNotesView extends ItemView {
 
       const sortedFiles = this.tagAnalyzer.sortFiles(files, this.plugin.settings.defaultSortMode);
 
-      const headerEl = tagGroupEl.createEl('div', {
+      const headerEl = tagGroupEl.createDiv({
         text: `Notes with tag: ${tag} ` + ' (' + sortedFiles.length + ')',
         cls: CSS_CLASSES.TAG_GROUP_HEADER,
         attr: {
