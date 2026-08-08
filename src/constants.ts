@@ -29,7 +29,8 @@ export const CSS_CLASSES = {
   SEPARATOR: 'related-notes-separator',
   PREVIEW: 'related-notes-preview',
   PREVIEW_LOADED: 'is-loaded',
-  INSTRUCTIONS: 'related-notes-instructions'
+  INSTRUCTIONS: 'related-notes-instructions',
+  EXCERPT: 'related-notes-excerpt'
 };
 
 export const TIMEOUTS = {

@@ -89,6 +89,7 @@ export default class RelatedNotesPlugin extends Plugin {
     await this.saveData(this.settings);
     const view = this.getView();
     if (view) {
+      view.clearExcerptCache();
       // Trigger a view update if settings change that affect display
       await view.updateView();
     }

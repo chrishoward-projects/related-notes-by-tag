@@ -3,6 +3,7 @@ import RelatedNotesPlugin from './main';
 import { TagAnalyzer, FileWithMatchedTags } from './tag-analyzer';
 import { PreviewManager } from './preview-manager';
 import { UIRenderer } from './ui-renderer';
+import { ExcerptService } from './excerpt-service';
 import { CSS_CLASSES } from './constants';
 
 export const RELATED_NOTES_BY_TAG_VIEW_TYPE = 'related-notes-by-tag-view';
@@ -13,9 +14,11 @@ export class RelatedNotesView extends ItemView {
   private tagAnalyzer: TagAnalyzer;
   private previewManager: PreviewManager;
   private uiRenderer: UIRenderer;
+  private excerptService: ExcerptService;
   private tagGroupStates: Map<string, boolean> = new Map();
   private isExpandAllMode: boolean = false;
   private expandCollapseButton: HTMLElement | null = null;
+  private renderGeneration = 0;
   
   async handleSortChange(mode: 'name'|'date'|'created') {
     this.plugin.settings.defaultSortMode = mode;
@@ -41,6 +44,7 @@ export class RelatedNotesView extends ItemView {
     this.tagAnalyzer = new TagAnalyzer(this.app);
     this.previewManager = new PreviewManager(this.app);
     this.uiRenderer = new UIRenderer();
+    this.excerptService = new ExcerptService(this.app);
   }
 
   getViewType(): string {
@@ -66,6 +70,10 @@ export class RelatedNotesView extends ItemView {
     this.previewManager.cleanup();
     this.uiRenderer.cleanup();
     this.container.empty();
+  }
+
+  clearExcerptCache(): void {
+    this.excerptService.clearCache();
   }
 
   private captureCurrentState(): void {
@@ -127,32 +135,50 @@ export class RelatedNotesView extends ItemView {
       return;
     }
 
+    const generation = ++this.renderGeneration;
+
     this.captureCurrentState();
-    
+
     this.container.empty();
     this.container.addClass(CSS_CLASSES.CONTAINER);
-    
+
     const headerEl = this.renderHeader();
     this.renderControls(headerEl);
-    
+
     const activeFile = this.getActiveFile();
     if (!activeFile) return;
-    
+
     const analysisResult = this.tagAnalyzer.analyzeRelatedNotes(activeFile, this.plugin.settings);
-    
+
     if (analysisResult.currentNoteTags.length === 0) {
       this.container.createEl('p', { text: 'Active note has no tags.' });
       return;
     }
-    
+
     if (analysisResult.relatedNotesMap.size === 0) {
       this.container.createEl('p', { text: 'No other notes found with matching tags.' });
       return;
     }
-    
-    this.renderTagGroups(analysisResult.relatedNotesMap);
-    
+
+    const excerpts = await this.getExcerptsIfNeeded(analysisResult.relatedNotesMap);
+    if (generation !== this.renderGeneration) return;
+
+    this.renderTagGroups(analysisResult.relatedNotesMap, excerpts);
+
     this.restoreState();
+  }
+
+  private async getExcerptsIfNeeded(relatedNotesMap: Map<string, FileWithMatchedTags[]>): Promise<Map<string, string>> {
+    if (this.plugin.settings.noteDisplayMode === 'title') {
+      return new Map<string, string>();
+    }
+
+    const allFiles: TFile[] = [];
+    relatedNotesMap.forEach(files => {
+      files.forEach(f => allFiles.push(f.file));
+    });
+
+    return this.excerptService.getExcerptsForFiles(allFiles, this.plugin.settings);
   }
 
   private renderHeader(): HTMLElement {
@@ -202,7 +228,7 @@ export class RelatedNotesView extends ItemView {
     return activeFile;
   }
 
-  private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>): void {
+  private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>): void {
     // Convert Map to array and sort by file count (highest to lowest)
     const sortedTagEntries = Array.from(relatedNotesMap.entries())
       .sort(([, filesA], [, filesB]) => filesB.length - filesA.length);
@@ -232,8 +258,8 @@ export class RelatedNotesView extends ItemView {
       const listEl = tagGroupEl.createEl('ul', { cls: CSS_CLASSES.NOTES_LIST });
 
       this.setupTagGroupToggle(tagGroupEl, headerEl, tag);
-      
-      this.renderFileList(listEl, sortedFiles);
+
+      this.renderFileList(listEl, sortedFiles, excerpts);
       
       tagGroupEl.createEl('hr', { cls: CSS_CLASSES.SEPARATOR });
     });
@@ -257,12 +283,16 @@ export class RelatedNotesView extends ItemView {
     });
   }
 
-  private renderFileList(listEl: HTMLElement, files: FileWithMatchedTags[]): void {
+  private renderFileList(listEl: HTMLElement, files: FileWithMatchedTags[], excerpts: Map<string, string>): void {
     files.forEach(fileWithTags => {
       const listItemEl = listEl.createEl('li', { cls: CSS_CLASSES.LIST_ITEM });
-      const linkEl = this.createFileLink(listItemEl, fileWithTags.file);
+      const excerpt = excerpts.get(fileWithTags.file.path) ?? '';
+      const { linkEl, excerptEl } = this.createFileLink(listItemEl, fileWithTags.file, excerpt);
       this.setupFileLinkEvents(linkEl, fileWithTags.file);
-      
+      if (excerptEl) {
+        this.setupFileLinkEvents(excerptEl, fileWithTags.file);
+      }
+
       // Add matched tags if the setting is enabled
       if (this.plugin.settings.showMatchedTags) {
         this.renderMatchedTags(listItemEl, fileWithTags.matchedTags);
@@ -270,15 +300,24 @@ export class RelatedNotesView extends ItemView {
     });
   }
 
-  private createFileLink(container: HTMLElement, file: TFile): HTMLElement {
+  private createFileLink(container: HTMLElement, file: TFile, excerpt: string): { linkEl: HTMLElement; excerptEl?: HTMLElement } {
+    const mode = this.plugin.settings.noteDisplayMode;
+    const titleText = mode === 'excerpt' && excerpt ? excerpt : file.basename;
+
     const linkEl = container.createEl('a', {
-      text: file.basename,
+      text: titleText,
       href: '#',
       title: 'Hold Cmd/Ctrl + hover to preview\nClick to open',
       cls: CSS_CLASSES.NOTE_LINK
     });
     linkEl.dataset.filePath = file.path;
-    return linkEl;
+
+    let excerptEl: HTMLElement | undefined;
+    if (mode === 'title-excerpt' && excerpt) {
+      excerptEl = container.createDiv({ text: excerpt, cls: CSS_CLASSES.EXCERPT });
+    }
+
+    return { linkEl, excerptEl };
   }
 
   private setupFileLinkEvents(linkEl: HTMLElement, file: TFile): void {

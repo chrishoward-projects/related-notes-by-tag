@@ -28,6 +28,17 @@
   text-decoration: underline;
 }
 
+.related-notes-excerpt {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.excerpt-length-input {
+  width: 4em;
+}
+
 .related-notes-tag-group {
   margin-bottom: 10px;
 }

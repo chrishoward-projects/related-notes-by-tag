@@ -83,7 +83,33 @@ export class ExcerptService {
       }
     }
 
-    return lines.slice(startIndex).join(' ').replace(/\s+/g, ' ').trim();
+    const blockStripped = lines.slice(startIndex).map(line => this.stripBlockMarkup(line));
+    return this.stripInlineMarkup(blockStripped.join(' '));
+  }
+
+  private stripBlockMarkup(line: string): string {
+    return line
+      .replace(/^\s{0,3}#{1,6}\s+/, '')
+      .replace(/^\s{0,3}>\s?/, '')
+      .replace(/^\s*[-*+]\s+/, '')
+      .replace(/^\s*\d+\.\s+/, '')
+      .replace(/^\s*(-{3,}|\*{3,}|_{3,})\s*$/, '');
+  }
+
+  private stripInlineMarkup(text: string): string {
+    return text
+      .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/\[\[([^\]|]*)\|([^\]]*)\]\]/g, '$2')
+      .replace(/\[\[([^\]]*)\]\]/g, '$1')
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/`([^`]*)`/g, '$1')
+      .replace(/(\*\*\*|___)(.*?)\1/g, '$2')
+      .replace(/(\*\*|__)(.*?)\1/g, '$2')
+      .replace(/(\*|_)(.*?)\1/g, '$2')
+      .replace(/~~(.*?)~~/g, '$1')
+      .replace(/#[a-zA-Z0-9_/-]+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   private takeSentences(text: string, count: number): string {

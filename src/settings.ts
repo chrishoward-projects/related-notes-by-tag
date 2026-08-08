@@ -89,10 +89,12 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
 
-    // Zettelkasten/Atomic notes Section
+    // Titles and Excerpts Section
     new Setting(containerEl)
       // eslint-disable-next-line obsidianmd/ui/sentence-case
-      .setName('Zettelkasten/Atomic notes')
+      .setName('Titles and Excerpts')
+      // eslint-disable-next-line obsidianmd/ui/sentence-case
+      .setDesc('Show an excerpt of a note\'s content alongside or instead of its title. Especially useful for Zettelkasten or atomic notes with generic, date-based titles - though a handy preview even when titles are already descriptive.')
       .setHeading();
 
     new Setting(containerEl)
@@ -114,6 +116,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       .addText(text => {
         text.inputEl.type = 'number';
         text.inputEl.min = '1';
+        text.inputEl.addClass('excerpt-length-input');
         text
           .setValue(String(this.plugin.settings.excerptLength))
           .onChange(async (value) => {
