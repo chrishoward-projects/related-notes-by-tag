@@ -1,0 +1,107 @@
+import { App, TFile } from 'obsidian';
+import { RelatedNotesSettings } from './settings';
+
+interface CacheEntry {
+  mtime: number;
+  excerpt: string;
+}
+
+export class ExcerptService {
+  private cache: Map<string, CacheEntry> = new Map();
+
+  constructor(private app: App) {}
+
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  async getExcerptsForFiles(files: TFile[], settings: RelatedNotesSettings): Promise<Map<string, string>> {
+    const uniqueFiles = new Map<string, TFile>();
+    files.forEach(file => uniqueFiles.set(file.path, file));
+
+    const result = new Map<string, string>();
+    const misses: TFile[] = [];
+
+    uniqueFiles.forEach(file => {
+      const cached = this.cache.get(file.path);
+      if (cached && cached.mtime === file.stat.mtime) {
+        result.set(file.path, cached.excerpt);
+      } else {
+        misses.push(file);
+      }
+    });
+
+    await Promise.all(misses.map(async file => {
+      const excerpt = await this.buildExcerpt(file, settings);
+      this.cache.set(file.path, { mtime: file.stat.mtime, excerpt });
+      result.set(file.path, excerpt);
+    }));
+
+    return result;
+  }
+
+  private async buildExcerpt(file: TFile, settings: RelatedNotesSettings): Promise<string> {
+    const content = await this.app.vault.cachedRead(file);
+    const body = this.stripFrontmatter(file, content);
+    const text = this.prepareText(body, settings.excerptIncludeHeading);
+    if (!text) return '';
+
+    if (settings.excerptUnit === 'sentences') {
+      return this.takeSentences(text, settings.excerptLength);
+    }
+    if (settings.excerptUnit === 'words') {
+      return this.takeWords(text, settings.excerptLength);
+    }
+    return this.takeCharacters(text, settings.excerptLength);
+  }
+
+  private stripFrontmatter(file: TFile, content: string): string {
+    const position = this.app.metadataCache.getFileCache(file)?.frontmatterPosition;
+    if (!position) return content;
+    return content.slice(position.end.offset);
+  }
+
+  private prepareText(body: string, includeHeading: boolean): string {
+    const lines = body.split('\n');
+    let startIndex = 0;
+
+    while (startIndex < lines.length && lines[startIndex].trim() === '') {
+      startIndex++;
+    }
+
+    if (startIndex >= lines.length) return '';
+
+    const headingMatch = lines[startIndex].match(/^#{1,6}\s+(.*)$/);
+    if (headingMatch) {
+      if (!includeHeading) {
+        startIndex++;
+        while (startIndex < lines.length && lines[startIndex].trim() === '') {
+          startIndex++;
+        }
+      } else {
+        lines[startIndex] = headingMatch[1];
+      }
+    }
+
+    return lines.slice(startIndex).join(' ').replace(/\s+/g, ' ').trim();
+  }
+
+  private takeSentences(text: string, count: number): string {
+    const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) ?? [text];
+    return sentences.slice(0, count).join('').trim();
+  }
+
+  private takeWords(text: string, count: number): string {
+    const words = text.split(' ').filter(w => w.length > 0);
+    if (words.length <= count) return words.join(' ');
+    return words.slice(0, count).join(' ') + '…';
+  }
+
+  private takeCharacters(text: string, count: number): string {
+    if (text.length <= count) return text;
+    const slice = text.slice(0, count);
+    const lastSpace = slice.lastIndexOf(' ');
+    const trimmed = lastSpace > 0 ? slice.slice(0, lastSpace) : slice;
+    return trimmed.trim() + '…';
+  }
+}
