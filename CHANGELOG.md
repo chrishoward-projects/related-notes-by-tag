@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.9]
+
+### Fixed
+- Fix low-contrast hover on the folder exclusion delete button, where the red icon became hard to read against the red hover background in some themes. The hover now uses Obsidian's neutral `--background-modifier-hover` instead of `--background-modifier-error-hover`, which is defined as a translucent overlay in several themes rather than a solid fill
+
+### Changed
+- Remove all `!important` declarations from styles.css, per Obsidian's plugin review guidelines. The dropdown menu's show/hide toggle now relies on the `.is-visible` compound selector's natural specificity, and the folder exclusion delete button is scoped to its settings container so it outranks Obsidian's default button styling on specificity alone. This stops the plugin's styles from overriding themes and user CSS snippets
+
 ## [0.4.8]
 
 ### Fixed

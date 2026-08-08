@@ -107,13 +107,13 @@
   border-radius: 4px;
   box-shadow: var(--shadow-s);
   z-index: 1000;
-  display: none !important; /* Ensure it's hidden by default */
+  display: none;
   min-width: 160px;
   padding: 4px 0;
 }
 
 .related-notes-dropdown-menu.is-visible {
-  display: block !important; /* Ensure it's shown when class is present */
+  display: block;
 }
 
 .related-notes-dropdown-item {
@@ -253,17 +253,23 @@
 }
 
 /* Delete Button Styling */
-.folder-exclusion-delete-btn {
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  color: var(--text-error) !important;
-  cursor: pointer !important;
-  padding: 4px !important;
+/* Scoped to the settings-tab container so this outranks Obsidian's own button
+   rules on specificity rather than with !important */
+.folder-exclusion-container .folder-exclusion-delete-btn {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--text-error);
+  cursor: pointer;
+  padding: 4px;
 }
 
-.folder-exclusion-delete-btn:hover {
-  background-color: var(--background-modifier-error-hover) !important;
+/* Neutral hover wash rather than --background-modifier-error-hover: that
+   variable is translucent in several themes, so a red icon over it reads as
+   red-on-red. --text-error is legible on the normal background by definition,
+   so pairing it with the standard hover keeps contrast in every theme. */
+.folder-exclusion-container .folder-exclusion-delete-btn:hover {
+  background-color: var(--background-modifier-hover);
 }
 
 /* Expand/Collapse All Button */
