@@ -51,9 +51,11 @@ Thumbs.db
 # Build artifacts
 main.js
 data.json
-package-lock.json
 dist/
 build/
+
+# Session exports
+session-exports/
 
 # Testing
 .nyc_output

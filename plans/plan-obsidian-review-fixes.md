@@ -62,10 +62,12 @@ Why it matters: Obsidian lets users pop a tab out into its own OS window (its ow
 
 No lockfile is committed (`package-lock.json` exists locally but is gitignored as a build artifact, and untracked).
 
-- [ ] Delete local `package-lock.json`
-- [ ] Remove `package-lock.json` from `.gitignore`'s "Build artifacts" section (a lockfile isn't a build artifact)
-- [ ] Run `pnpm install` to generate `pnpm-lock.yaml`
-- [ ] Commit `pnpm-lock.yaml`
+- [x] Delete local `package-lock.json`
+- [x] Remove `package-lock.json` from `.gitignore`'s "Build artifacts" section (a lockfile isn't a build artifact)
+- [x] Run `pnpm install` to generate `pnpm-lock.yaml`
+- [x] Commit `pnpm-lock.yaml`
+
+Note: `pnpm install` reported `[ERR_PNPM_IGNORED_BUILDS] esbuild` — pnpm's default blocks a package's install/postinstall scripts unless explicitly approved. Verified `npm run build` still works: the platform-specific `@esbuild/darwin-arm64` optional dependency installs regardless, and esbuild's JS wrapper finds the binary there directly without needing its install script to run. Left the script unapproved (`pnpm approve-builds` not run) since it isn't needed and approving would widen the install-time trust surface for no benefit.
 
 ## Skip / low priority (not part of this cleanup)
 
