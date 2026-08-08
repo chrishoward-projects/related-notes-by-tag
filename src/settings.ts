@@ -8,6 +8,9 @@ export interface FolderExclusion {
   id: string;            // Unique identifier for UI management
 }
 
+export type NoteDisplayMode = 'title' | 'title-excerpt' | 'excerpt';
+export type ExcerptUnit = 'sentences' | 'words' | 'characters';
+
 export interface RelatedNotesSettings {
   defaultSortMode: 'name'|'date'|'created';
   defaultFilterMode: 1 | 2 | 3;
@@ -15,6 +18,10 @@ export interface RelatedNotesSettings {
   defaultGroupState: 'collapsed'|'expanded';
   showMatchedTags: boolean;
   excludedFolders: FolderExclusion[];
+  noteDisplayMode: NoteDisplayMode;
+  excerptLength: number;
+  excerptUnit: ExcerptUnit;
+  excerptIncludeHeading: boolean;
 }
 
 export const DEFAULT_SETTINGS: RelatedNotesSettings = {
@@ -24,6 +31,10 @@ export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   defaultGroupState: 'expanded',
   showMatchedTags: false,
   excludedFolders: [],
+  noteDisplayMode: 'title',
+  excerptLength: 12,
+  excerptUnit: 'words',
+  excerptIncludeHeading: true,
 };
 
 export class RelatedNotesSettingTab extends PluginSettingTab {
@@ -75,6 +86,62 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.defaultGroupState)
         .onChange(async (value: 'collapsed'|'expanded') => {
           this.plugin.settings.defaultGroupState = value;
+          await this.plugin.saveSettings();
+        }));
+
+    // Zettelkasten/Atomic notes Section
+    new Setting(containerEl)
+      // eslint-disable-next-line obsidianmd/ui/sentence-case
+      .setName('Zettelkasten/Atomic notes')
+      .setHeading();
+
+    new Setting(containerEl)
+      .setName('Note display')
+      .setDesc('Show the note title, an excerpt of its content, or both')
+      .addDropdown(dropdown => dropdown
+        .addOption('title', 'Title')
+        .addOption('title-excerpt', 'Title + excerpt')
+        .addOption('excerpt', 'Excerpt')
+        .setValue(this.plugin.settings.noteDisplayMode)
+        .onChange(async (value: NoteDisplayMode) => {
+          this.plugin.settings.noteDisplayMode = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Excerpt length')
+      .setDesc('How much of the note to show as an excerpt')
+      .addText(text => {
+        text.inputEl.type = 'number';
+        text.inputEl.min = '1';
+        text
+          .setValue(String(this.plugin.settings.excerptLength))
+          .onChange(async (value) => {
+            const parsed = parseInt(value, 10);
+            this.plugin.settings.excerptLength = Number.isFinite(parsed) && parsed > 0
+              ? parsed
+              : DEFAULT_SETTINGS.excerptLength;
+            await this.plugin.saveSettings();
+          });
+        return text;
+      })
+      .addDropdown(dropdown => dropdown
+        .addOption('sentences', 'Sentences')
+        .addOption('words', 'Words')
+        .addOption('characters', 'Characters')
+        .setValue(this.plugin.settings.excerptUnit)
+        .onChange(async (value: ExcerptUnit) => {
+          this.plugin.settings.excerptUnit = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Include heading in excerpt')
+      .setDesc('If a note starts with a heading, include it as part of the excerpt')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.excerptIncludeHeading)
+        .onChange(async (value) => {
+          this.plugin.settings.excerptIncludeHeading = value;
           await this.plugin.saveSettings();
         }));
 
