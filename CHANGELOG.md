@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.5.0]
+
+### Changed
+- Comprehensive compliance pass addressing every finding from Obsidian's plugin review scan: async/promise handling correctness, popout-window (`activeDocument`/`activeWindow`) compatibility, removal of all `!important` CSS declarations, minor DOM API and type-safety cleanup, and switching the committed lockfile to `pnpm-lock.yaml` to match the project's package manager. See the entries below for full detail on each change.
+
+### Fixed
+- Fix an intermittent "Cannot read properties of null" error in hover preview, and a low-contrast hover state on the folder exclusion delete button in themes with translucent error colours, both found and verified while testing this pass.
+
 ## [0.4.11]
 
 ### Changed
