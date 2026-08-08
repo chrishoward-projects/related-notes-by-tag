@@ -19,7 +19,7 @@ export class UIRenderer {
 
   constructor() {
     // Global click handler to close dropdowns when clicking outside
-    document.addEventListener('click', this.handleGlobalClick);
+    activeDocument.addEventListener('click', this.handleGlobalClick);
   }
 
   private handleGlobalClick = (e: MouseEvent) => {
@@ -292,7 +292,7 @@ export class UIRenderer {
   }
 
   cleanup() {
-    document.removeEventListener('click', this.handleGlobalClick);
+    activeDocument.removeEventListener('click', this.handleGlobalClick);
     this.openDropdowns.clear();
   }
 }

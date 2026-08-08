@@ -290,7 +290,7 @@ export class RelatedNotesView extends ItemView {
         this.previewManager.showPreview(file, linkEl);
       } else {
         // Set up a timer to check for modifier key press while hovering
-        hoverTimer = setTimeout(() => {
+        hoverTimer = activeWindow.setTimeout(() => {
           if (linkEl.matches(':hover') && this.previewManager.getIsModifierHeld()) {
             this.previewManager.showPreview(file, linkEl);
           }
@@ -300,7 +300,7 @@ export class RelatedNotesView extends ItemView {
     
     linkEl.addEventListener('mouseleave', () => {
       if (hoverTimer) {
-        clearTimeout(hoverTimer);
+        activeWindow.clearTimeout(hoverTimer);
       }
       if (!this.previewManager.getIsModifierHeld()) {
         this.previewManager.hidePreview();

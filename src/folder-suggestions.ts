@@ -29,13 +29,13 @@ export class FolderSuggestions {
    */
   public displayFolderSuggestions(folders: string[]) {
     // Clear previous suggestions
-    const existingSuggestions = document.querySelectorAll('.folder-suggestions-container');
+    const existingSuggestions = activeDocument.querySelectorAll('.folder-suggestions-container');
     existingSuggestions.forEach(el => el.remove());
 
     if (folders.length === 0) return;
 
     // Find the active input element that triggered this
-    const activeElement = document.activeElement;
+    const activeElement = activeDocument.activeElement;
     if (!(activeElement instanceof HTMLInputElement)) {
       return;
     }
@@ -50,29 +50,24 @@ export class FolderSuggestions {
     (settingItemControl as HTMLElement).addClass('folder-exclusion-setting-control');
 
     // Create a new suggestions container
-    const newContainer = document.createElement('div');
-    newContainer.className = 'folder-suggestions-container';
+    const newContainer = createDiv({ cls: 'folder-suggestions-container' });
 
     // Add suggestions to the container
     folders.forEach(folder => {
-      const suggestionItem = document.createElement('div');
-      suggestionItem.className = 'folder-suggestion-item';
-      suggestionItem.textContent = folder;
+      const suggestionItem = newContainer.createDiv({ cls: 'folder-suggestion-item', text: folder });
 
       // Click event
       suggestionItem.addEventListener('click', () => {
         // Set the value of the input field
         (activeElement as HTMLInputElement).value = folder;
-        
+
         // Trigger an input event to ensure onChange handlers fire
         const event = new Event('input', { bubbles: true });
         activeElement.dispatchEvent(event);
-        
+
         // Remove the suggestions container
         newContainer.remove();
       });
-
-      newContainer.appendChild(suggestionItem);
     });
 
     // Position the suggestions container relative to the input element
@@ -92,13 +87,13 @@ export class FolderSuggestions {
     const clickOutsideHandler = (e: MouseEvent) => {
       if (!newContainer.contains(e.target as Node) && e.target !== activeElement) {
         newContainer.remove();
-        document.removeEventListener('click', clickOutsideHandler);
+        activeDocument.removeEventListener('click', clickOutsideHandler);
       }
     };
     
     // Delay adding the click listener to prevent immediate triggering
-    setTimeout(() => {
-      document.addEventListener('click', clickOutsideHandler);
+    activeWindow.setTimeout(() => {
+      activeDocument.addEventListener('click', clickOutsideHandler);
     }, 0);
   }
 }

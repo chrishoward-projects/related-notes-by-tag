@@ -37,7 +37,7 @@ export default class RelatedNotesPlugin extends Plugin {
         const view = this.getView();
         if (view && activeLeaf && view.leaf !== activeLeaf && activeLeaf.view.getViewType() === 'markdown') {
           // Defer update to allow click event and other UI changes to complete
-          setTimeout(async () => {
+          activeWindow.setTimeout(async () => {
             const currentView = this.getView(); // Re-check view in case it was closed during the timeout
             if (currentView) {
               await currentView.updateView();

@@ -13,17 +13,14 @@ export class PreviewManager extends Component {
   }
 
   private setupEventListeners(): void {
-    document.addEventListener('mousemove', this.trackMousePosition);
-    document.addEventListener('keydown', this.handleKeyDown);
-    document.addEventListener('keyup', this.handleKeyUp);
+    this.registerDomEvent(activeDocument, 'mousemove', this.trackMousePosition);
+    this.registerDomEvent(activeDocument, 'keydown', this.handleKeyDown);
+    this.registerDomEvent(activeDocument, 'keyup', this.handleKeyUp);
   }
 
   cleanup(): void {
-    document.removeEventListener('mousemove', this.trackMousePosition);
-    document.removeEventListener('keydown', this.handleKeyDown);
-    document.removeEventListener('keyup', this.handleKeyUp);
     this.hidePreview();
-    this.unload(); // Properly unload the component
+    this.unload(); // Properly unload the component; also removes registered DOM events
   }
 
   private trackMousePosition = (e: MouseEvent): void => {
@@ -34,7 +31,7 @@ export class PreviewManager extends Component {
     this.isModifierHeld = e.metaKey || e.ctrlKey;
     
     if (this.isModifierHeld) {
-      const hoveredElement = document.elementFromPoint(
+      const hoveredElement = activeDocument.elementFromPoint(
         this.lastMousePosition.x, 
         this.lastMousePosition.y
       );
@@ -61,13 +58,13 @@ export class PreviewManager extends Component {
   showPreview(file: TFile, linkEl: HTMLElement): void {
     this.hidePreview();
     
-    this.previewPopup = document.body.createDiv(CSS_CLASSES.PREVIEW);
+    this.previewPopup = activeDocument.body.createDiv(CSS_CLASSES.PREVIEW);
     this.currentPreviewFile = file;
     
     const position = this.calculatePosition(linkEl);
     this.applyPopupStyles(position);
     
-    document.addEventListener('click', this.hidePreviewOnClick, { once: true });
+    activeDocument.addEventListener('click', this.hidePreviewOnClick, { once: true });
     
     this.renderPreviewContent(file);
   }
@@ -103,12 +100,17 @@ export class PreviewManager extends Component {
   }
 
   private renderPreviewContent(file: TFile): void {
-    setTimeout(async () => {
+    activeWindow.setTimeout(async () => {
       if (this.previewPopup && this.currentPreviewFile === file && this.isModifierHeld) {
         try {
           // Read the file content directly
           const content = await this.app.vault.read(file);
-          
+
+          // Re-check: hidePreview() may have run while the file was being read
+          if (!(this.previewPopup && this.currentPreviewFile === file)) {
+            return;
+          }
+
           // Use this PreviewManager instance as the component since it extends Component
           await MarkdownRenderer.render(
             this.app,

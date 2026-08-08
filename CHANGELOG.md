@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.8]
+
+### Fixed
+- Fix intermittent "Cannot read properties of null (reading 'appendChild')" error in hover preview: the preview popup could be dismissed (via releasing the modifier key, moving the mouse away, or clicking elsewhere) while its content was still being read from disk, leaving a stale render call to run against a popup that no longer existed; now re-checks the popup is still current before rendering
+- Resolve popout-window compatibility issues flagged by Obsidian's plugin review scan: replaced bare `document`/`setTimeout`/`clearTimeout` with `activeDocument`/`activeWindow.setTimeout()`/`activeWindow.clearTimeout()` throughout, so hover preview, dropdown outside-click handling, and folder autocomplete keep working correctly in popped-out tabs; persistent preview listeners now use Obsidian's `registerDomEvent` for automatic cleanup
+
 ## [0.4.7]
 
 ### Fixed
