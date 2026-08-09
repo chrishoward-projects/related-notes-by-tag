@@ -62,6 +62,9 @@ Access plugin settings through Obsidian Settings > Plugin Options > Related Note
 * **Excerpt Length**: Set how much content to show, measured in sentences, words, or characters
 * **Include Heading**: Optionally include a note's leading heading as part of the excerpt
 * **Plain Text Excerpts**: Markdown formatting, links, and tags are automatically stripped so excerpts read as plain text
+* **Title Colour**: Set a custom colour for the note title/excerpt link, with a reset button to return to your theme's default
+* **Title Font Size**: Set a custom font size in pixels, with a reset button to return to your theme's default
+* **Title Font Weight**: Choose Normal, Medium, Semibold, or Bold, or leave at Default for your theme's usual weight
 
 ### Folder Exclusion
 * **Exclude Specific Folders**: Add multiple folder paths to exclude from related notes
