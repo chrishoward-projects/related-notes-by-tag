@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.6.0]
+
+### Added
+- Titles and Excerpts: show a configurable excerpt of a related note's body text instead of, or alongside, its title - useful for Zettelkasten or atomic-note vaults where titles are generic dates or IDs. Configurable in settings under "Titles and Excerpts": display mode (Title / Title + excerpt / Excerpt), excerpt length in sentences, words, or characters, and whether a leading heading is included. Excerpts strip markdown formatting (headings, lists, blockquotes, bold/italic/strikethrough, inline code, wikilinks, markdown links, images) and inline `#tags`, so they read as plain text
+- Title colour, font size, and font weight settings, applying to the note title/excerpt link. Each has a reset button to return to your theme's default; left unset, all three stay genuinely reactive to theme changes rather than a frozen snapshot
+
+### Fixed
+- Settings tab's activation instructions referenced a ribbon icon removed from the plugin over a year ago and never updated since. Desktop instructions now point at the right sidebar tab and the correct command palette entry; added a separate mobile instruction, since mobile's right sidebar has no dedicated button and is only reachable via a right-edge swipe
+
 ## [0.5.0]
 
 ### Changed
