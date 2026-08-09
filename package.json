@@ -1,7 +1,7 @@
 {
   "name": "related-notes-by-tag",
   "version": "0.6.0",
-  "description": "Displays list of notes in the sidebar that share tags with the currently active note.",
+  "description": "Displays list of notes in the sidebar that share tags with the currently active note. Supports notes with generic titles, like Zettelkasten and atomic notes, with excerpts feature.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",

@@ -1,6 +1,6 @@
 # Related Notes by Tag
 
-Discover related content in your Obsidian vault through tag-based connections. This plugin displays notes that share tags with your currently active note, helping you find related notes and build stronger knowledge connections.
+Discover related content in your Obsidian vault through tag-based connections. This plugin displays notes that share tags with your currently active note, helping you find related notes and build stronger knowledge connections. For note takers using generic titles, like Zettelkasten and atomic notes, use its excerpts feature.
 
 If you're a heavy tag user, this plugin makes tags even more useful.
 
