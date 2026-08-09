@@ -13,7 +13,8 @@ export type ExcerptUnit = 'sentences' | 'words' | 'characters';
 
 export interface RelatedNotesSettings {
   defaultSortMode: 'name'|'date'|'created';
-  defaultFilterMode: 1 | 2 | 3;
+  defaultFilterMode: 1 | 2 | 3 | 'all';
+  defaultTagSortMode: 'name' | 'count';
   excludedTags: string;
   defaultGroupState: 'collapsed'|'expanded';
   showMatchedTags: boolean;
@@ -30,6 +31,7 @@ export interface RelatedNotesSettings {
 export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   defaultSortMode: 'name',
   defaultFilterMode: 1,
+  defaultTagSortMode: 'count',
   excludedTags: '',
   defaultGroupState: 'expanded',
   showMatchedTags: false,

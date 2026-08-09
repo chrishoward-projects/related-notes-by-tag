@@ -15,6 +15,10 @@ export class TagAnalyzer {
   constructor(private app: App) {}
 
   analyzeRelatedNotes(activeFile: TFile, settings: RelatedNotesSettings): TagAnalysisResult {
+    if (settings.defaultFilterMode === 'all') {
+      return { relatedNotesMap: this.findAllNotes(activeFile, settings), currentNoteTags: [] };
+    }
+
     const fileCache = this.app.metadataCache.getFileCache(activeFile);
     if (!fileCache) {
       return { relatedNotesMap: new Map(), currentNoteTags: [] };
@@ -76,6 +80,40 @@ export class TagAnalyzer {
     }
 
     return relatedNotesMap;
+  }
+
+  private findAllNotes(activeFile: TFile, settings: RelatedNotesSettings): Map<string, FileWithMatchedTags[]> {
+    const allNotesMap = new Map<string, FileWithMatchedTags[]>();
+    const allMarkdownFiles = this.app.vault.getMarkdownFiles();
+
+    for (const file of allMarkdownFiles) {
+      if (file.path === activeFile.path) continue;
+
+      if (this.isFileInExcludedFolder(file, settings)) continue;
+
+      const cache = this.app.metadataCache.getFileCache(file);
+      if (!cache) continue;
+
+      const tagsInFile = getAllTags(cache);
+      if (!tagsInFile) continue;
+
+      const fileTags = this.getFilteredTags(tagsInFile, settings.excludedTags);
+      if (fileTags.length === 0) continue;
+
+      const fileWithTags: FileWithMatchedTags = {
+        file,
+        matchedTags: fileTags
+      };
+
+      fileTags.forEach(tag => {
+        if (!allNotesMap.has(tag)) {
+          allNotesMap.set(tag, []);
+        }
+        allNotesMap.get(tag)?.push(fileWithTags);
+      });
+    }
+
+    return allNotesMap;
   }
 
   private getOverlappingTags(file: TFile, currentTags: string[]): string[] {

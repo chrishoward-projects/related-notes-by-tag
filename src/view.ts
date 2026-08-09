@@ -26,7 +26,13 @@ export class RelatedNotesView extends ItemView {
     await this.updateView();
   }
 
-  async handleFilterChange(filterMode: 1|2|3) {
+  async handleTagSortChange(mode: 'name'|'count') {
+    this.plugin.settings.defaultTagSortMode = mode;
+    await this.plugin.saveSettings();
+    await this.updateView();
+  }
+
+  async handleFilterChange(filterMode: 1|2|3|'all') {
     this.plugin.settings.defaultFilterMode = filterMode;
     await this.plugin.saveSettings();
     await this.updateView();
@@ -167,13 +173,16 @@ export class RelatedNotesView extends ItemView {
 
     const analysisResult = this.tagAnalyzer.analyzeRelatedNotes(activeFile, this.plugin.settings);
 
-    if (analysisResult.currentNoteTags.length === 0) {
+    const isShowAllMode = this.plugin.settings.defaultFilterMode === 'all';
+
+    if (!isShowAllMode && analysisResult.currentNoteTags.length === 0) {
       this.container.createEl('p', { text: 'Active note has no tags.' });
       return;
     }
 
     if (analysisResult.relatedNotesMap.size === 0) {
-      this.container.createEl('p', { text: 'No other notes found with matching tags.' });
+      const message = isShowAllMode ? 'No other tagged notes found.' : 'No other notes found with matching tags.';
+      this.container.createEl('p', { text: message });
       return;
     }
 
@@ -211,22 +220,29 @@ export class RelatedNotesView extends ItemView {
       this.plugin.settings.defaultSortMode,
       (mode) => void this.handleSortChange(mode)
     );
-    
+
     this.uiRenderer.createFilterDropdown(
       actionButtons,
       this.plugin.settings.defaultFilterMode,
       (mode) => void this.handleFilterChange(mode)
     );
-    
+
     this.uiRenderer.createTagsToggleButton(
       actionButtons,
       this.plugin.settings.showMatchedTags,
+      this.plugin.settings.defaultFilterMode === 'all',
       (showTags) => void this.handleTagsToggle(showTags)
     );
-    
+
+    this.uiRenderer.createTagSortDropdown(
+      actionButtons,
+      this.plugin.settings.defaultTagSortMode,
+      (mode) => void this.handleTagSortChange(mode)
+    );
+
     // Initialize button state - opposite of defaultGroupState
     this.isExpandAllMode = this.plugin.settings.defaultGroupState === 'collapsed';
-    
+
     this.expandCollapseButton = this.uiRenderer.createExpandCollapseButton(
       actionButtons,
       this.isExpandAllMode,
@@ -246,9 +262,14 @@ export class RelatedNotesView extends ItemView {
   }
 
   private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>): void {
-    // Convert Map to array and sort by file count (highest to lowest)
+    // Convert Map to array and sort tag groups per the tag sort setting
     const sortedTagEntries = Array.from(relatedNotesMap.entries())
-      .sort(([, filesA], [, filesB]) => filesB.length - filesA.length);
+      .sort(([tagA, filesA], [tagB, filesB]) => {
+        if (this.plugin.settings.defaultTagSortMode === 'name') {
+          return tagA.localeCompare(tagB);
+        }
+        return filesB.length - filesA.length;
+      });
 
     sortedTagEntries.forEach(([tag, files]) => {
       const savedState = this.tagGroupStates.get(tag);

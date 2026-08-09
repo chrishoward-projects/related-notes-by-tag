@@ -1,4 +1,4 @@
-import { CSS_CLASSES, ICONS, SORT_LABELS, FILTER_LABELS, SORT_MODES, FILTER_MODES } from './constants';
+import { CSS_CLASSES, ICONS, SORT_LABELS, FILTER_LABELS, SORT_MODES, FILTER_MODES, TAG_SORT_LABELS, TAG_SORT_MODES } from './constants';
 
 export interface DropdownOption {
   value: string | number;
@@ -156,21 +156,41 @@ export class UIRenderer {
     });
   }
 
-  createFilterDropdown(
-    container: HTMLElement, 
-    currentMode: number, 
-    onFilterChange: (mode: 1 | 2 | 3) => void
+  createTagSortDropdown(
+    container: HTMLElement,
+    currentMode: 'name' | 'count',
+    onTagSortChange: (mode: 'name' | 'count') => void
   ): HTMLElement {
     const options: DropdownOption[] = [
+      { value: TAG_SORT_MODES.NAME, label: TAG_SORT_LABELS[TAG_SORT_MODES.NAME], isActive: currentMode === TAG_SORT_MODES.NAME },
+      { value: TAG_SORT_MODES.COUNT, label: TAG_SORT_LABELS[TAG_SORT_MODES.COUNT], isActive: currentMode === TAG_SORT_MODES.COUNT }
+    ];
+
+    return this.createDropdown(container, {
+      icon: ICONS.TAG_SORT,
+      options,
+      onItemClick: (value) => onTagSortChange(value as 'name' | 'count'),
+      containerClass: CSS_CLASSES.TAG_SORT_CONTROLS,
+      ariaLabel: 'Sort tag groups'
+    });
+  }
+
+  createFilterDropdown(
+    container: HTMLElement,
+    currentMode: 1 | 2 | 3 | 'all',
+    onFilterChange: (mode: 1 | 2 | 3 | 'all') => void
+  ): HTMLElement {
+    const options: DropdownOption[] = [
+      { value: FILTER_MODES.ALL, label: FILTER_LABELS[FILTER_MODES.ALL], isActive: currentMode === FILTER_MODES.ALL },
       { value: FILTER_MODES.ONE_TAG, label: FILTER_LABELS[FILTER_MODES.ONE_TAG], isActive: currentMode === FILTER_MODES.ONE_TAG },
       { value: FILTER_MODES.TWO_TAGS, label: FILTER_LABELS[FILTER_MODES.TWO_TAGS], isActive: currentMode === FILTER_MODES.TWO_TAGS },
       { value: FILTER_MODES.THREE_TAGS, label: FILTER_LABELS[FILTER_MODES.THREE_TAGS], isActive: currentMode === FILTER_MODES.THREE_TAGS }
     ];
 
     return this.createDropdown(container, {
-      icon: ICONS.FILTER,
+      icon: currentMode === FILTER_MODES.ALL ? ICONS.FILTER_CLEAR : ICONS.FILTER,
       options,
-      onItemClick: (value) => onFilterChange(value as 1 | 2 | 3),
+      onItemClick: (value) => onFilterChange(value as 1 | 2 | 3 | 'all'),
       containerClass: CSS_CLASSES.FILTER_CONTROLS,
       ariaLabel: 'Filter by tag count'
     });
@@ -186,11 +206,13 @@ export class UIRenderer {
   }
 
   createTagsToggleButton(
-    container: HTMLElement, 
-    isActive: boolean, 
+    container: HTMLElement,
+    isActive: boolean,
+    isShowAllMode: boolean,
     onToggle: (showTags: boolean) => void
   ): HTMLElement {
-    const ariaLabel = isActive ? 'Hide matched tags' : 'Show matched tags';
+    const tagsLabel = isShowAllMode ? 'tags' : 'matched tags';
+    const ariaLabel = isActive ? `Hide ${tagsLabel}` : `Show ${tagsLabel}`;
     const toggleButton = container.createEl('button', {
       cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} ${CSS_CLASSES.TAGS_TOGGLE_CONTROLS} clickable-icon ${isActive ? CSS_CLASSES.DROPDOWN_ITEM_ACTIVE : ''}`,
       attr: {
@@ -216,7 +238,7 @@ export class UIRenderer {
       onToggle(newState);
 
       // Update button appearance and accessibility attributes
-      const newAriaLabel = newState ? 'Hide matched tags' : 'Show matched tags';
+      const newAriaLabel = newState ? `Hide ${tagsLabel}` : `Show ${tagsLabel}`;
       toggleButton.setAttribute('aria-label', newAriaLabel);
       toggleButton.setAttribute('aria-pressed', newState.toString());
       toggleButton.title = newAriaLabel;
