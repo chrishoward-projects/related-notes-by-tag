@@ -15,6 +15,7 @@ If you're a heavy tag user, this plugin makes tags even more useful.
 * **Flexible Sorting**: Sort related notes by name, modified date, or creation date
 * **Tag Filtering**: Set minimum tag match requirements (1, 2, or 3+ matching tags)
 * **Matched Tags Display**: Toggle to show which specific tags are shared between notes
+* **Titles and Excerpts**: Show a note's title, a content excerpt, or both — ideal for Zettelkasten or atomic notes with generic, date-based titles
 * **Collapsible Groups**: Organize results by tag with expandable/collapsible sections
 * **Folder Exclusion**: Exclude files from specific folders with granular control over subfolders
 
@@ -55,6 +56,12 @@ Access plugin settings through Obsidian Settings > Plugin Options > Related Note
 * **Default Sort Mode**: Choose how related notes are sorted by default
 * **Excluded Tags**: Specify tags to ignore when finding related notes (# prefix optional)
 * **Default Group State**: Set whether tag groups start collapsed or expanded
+
+### Titles and Excerpts
+* **Note Display Mode**: Show the title, an excerpt of the note's content, or both
+* **Excerpt Length**: Set how much content to show, measured in sentences, words, or characters
+* **Include Heading**: Optionally include a note's leading heading as part of the excerpt
+* **Plain Text Excerpts**: Markdown formatting, links, and tags are automatically stripped so excerpts read as plain text
 
 ### Folder Exclusion
 * **Exclude Specific Folders**: Add multiple folder paths to exclude from related notes
