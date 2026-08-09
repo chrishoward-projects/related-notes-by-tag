@@ -63,3 +63,27 @@ See RELEASE.md for the full process. In short, after completing any task that ad
 - Plugin ID: `related-notes-by-tag`
 - Minimum Obsidian version: 0.15.0
 - Desktop and mobile compatible
+
+## Superpowers skills - do not auto-trigger
+
+Do not use any Superpowers skills on this project, even when a task would
+otherwise match their description - this project's own conventions above
+already cover the same ground, and several (strict TDD in particular) are a
+poor fit for the small, low-risk tweaks (wording, colours, thresholds) that
+make up much of this project's work. This includes `using-git-worktrees` -
+this project doesn't run a persistent dev/watch process that a worktree
+would need to protect from branch-switching, so there's no exception here:
+
+- `using-superpowers`
+- `brainstorming`
+- `writing-plans`
+- `executing-plans`
+- `subagent-driven-development`
+- `dispatching-parallel-agents`
+- `systematic-debugging`
+- `verification-before-completion`
+- `test-driven-development`
+- `requesting-code-review`
+- `receiving-code-review`
+- `finishing-a-development-branch`
+- `using-git-worktrees`
