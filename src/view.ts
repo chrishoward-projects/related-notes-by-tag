@@ -76,6 +76,21 @@ export class RelatedNotesView extends ItemView {
     this.excerptService.clearCache();
   }
 
+  private applyTitleStyleOverrides(): void {
+    const settings = this.plugin.settings;
+    this.setOrClearCssVar('--related-notes-title-color', settings.titleColor);
+    this.setOrClearCssVar('--related-notes-title-font-size', settings.titleFontSize > 0 ? `${settings.titleFontSize}px` : '');
+    this.setOrClearCssVar('--related-notes-title-font-weight', settings.titleFontWeight);
+  }
+
+  private setOrClearCssVar(name: string, value: string): void {
+    if (value) {
+      this.container.style.setProperty(name, value);
+    } else {
+      this.container.style.removeProperty(name);
+    }
+  }
+
   private captureCurrentState(): void {
     const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
     
@@ -141,6 +156,8 @@ export class RelatedNotesView extends ItemView {
 
     this.container.empty();
     this.container.addClass(CSS_CLASSES.CONTAINER);
+
+    this.applyTitleStyleOverrides();
 
     const headerEl = this.renderHeader();
     this.renderControls(headerEl);

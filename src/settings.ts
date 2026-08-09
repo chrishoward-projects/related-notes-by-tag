@@ -22,6 +22,9 @@ export interface RelatedNotesSettings {
   excerptLength: number;
   excerptUnit: ExcerptUnit;
   excerptIncludeHeading: boolean;
+  titleColor: string;
+  titleFontSize: number;
+  titleFontWeight: string;
 }
 
 export const DEFAULT_SETTINGS: RelatedNotesSettings = {
@@ -35,6 +38,9 @@ export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   excerptLength: 12,
   excerptUnit: 'words',
   excerptIncludeHeading: true,
+  titleColor: '',
+  titleFontSize: 0,
+  titleFontWeight: '',
 };
 
 export class RelatedNotesSettingTab extends PluginSettingTab {
@@ -116,7 +122,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       .addText(text => {
         text.inputEl.type = 'number';
         text.inputEl.min = '1';
-        text.inputEl.addClass('excerpt-length-input');
+        text.inputEl.addClass('related-notes-narrow-number-input');
         text
           .setValue(String(this.plugin.settings.excerptLength))
           .onChange(async (value) => {
@@ -145,6 +151,64 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.excerptIncludeHeading)
         .onChange(async (value) => {
           this.plugin.settings.excerptIncludeHeading = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Title colour')
+      .setDesc('Colour of the note title/excerpt link. Defaults to your theme\'s normal text colour.')
+      .addColorPicker(picker => picker
+        .setValue(this.plugin.settings.titleColor || this.resolveComputedColor('--text-normal'))
+        .onChange(async (value) => {
+          this.plugin.settings.titleColor = value;
+          await this.plugin.saveSettings();
+        }))
+      .addExtraButton(button => button
+        .setIcon('rotate-ccw')
+        .setTooltip('Reset to default')
+        .onClick(async () => {
+          this.plugin.settings.titleColor = '';
+          await this.plugin.saveSettings();
+          this.display();
+        }));
+
+    new Setting(containerEl)
+      .setName('Title font size')
+      .setDesc('Font size in pixels for the note title/excerpt link.')
+      .addText(text => {
+        text.inputEl.type = 'number';
+        text.inputEl.min = '1';
+        text.inputEl.addClass('related-notes-narrow-number-input');
+        text
+          .setValue(String(this.plugin.settings.titleFontSize || this.resolveComputedFontSizePx('--font-ui-smaller')))
+          .onChange(async (value) => {
+            const parsed = parseInt(value, 10);
+            this.plugin.settings.titleFontSize = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+            await this.plugin.saveSettings();
+          });
+        return text;
+      })
+      .addExtraButton(button => button
+        .setIcon('rotate-ccw')
+        .setTooltip('Reset to default')
+        .onClick(async () => {
+          this.plugin.settings.titleFontSize = 0;
+          await this.plugin.saveSettings();
+          this.display();
+        }));
+
+    new Setting(containerEl)
+      .setName('Title font weight')
+      .setDesc('Font weight for the note title/excerpt link')
+      .addDropdown(dropdown => dropdown
+        .addOption('', 'Default')
+        .addOption('400', 'Normal')
+        .addOption('500', 'Medium')
+        .addOption('600', 'Semibold')
+        .addOption('700', 'Bold')
+        .setValue(this.plugin.settings.titleFontWeight)
+        .onChange(async (value) => {
+          this.plugin.settings.titleFontWeight = value;
           await this.plugin.saveSettings();
         }));
 
@@ -264,6 +328,24 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       // Set initial description
       updateDescription();
     });
+  }
+
+  private resolveComputedColor(cssVar: string): string {
+    const probe = this.containerEl.createSpan({ attr: { style: `color: var(${cssVar}); display: none;` } });
+    const rgb = activeWindow.getComputedStyle(probe).color;
+    probe.remove();
+
+    const match = rgb.match(/\d+/g);
+    if (!match || match.length < 3) return '#000000';
+    const [r, g, b] = match.map(Number);
+    return '#' + [r, g, b].map(n => n.toString(16).padStart(2, '0')).join('');
+  }
+
+  private resolveComputedFontSizePx(cssVar: string): number {
+    const probe = this.containerEl.createSpan({ attr: { style: `font-size: var(${cssVar}); display: none;` } });
+    const fontSize = activeWindow.getComputedStyle(probe).fontSize;
+    probe.remove();
+    return parseFloat(fontSize) || 13;
   }
 
   private addNewFolderExclusion(container: HTMLElement): void {

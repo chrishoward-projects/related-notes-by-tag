@@ -20,7 +20,12 @@
 
 .related-notes-list-item a {
   text-decoration: none;
-  color: var(--text-normal);
+}
+
+.related-note-link {
+  color: var(--related-notes-title-color, var(--text-normal));
+  font-size: var(--related-notes-title-font-size, inherit);
+  font-weight: var(--related-notes-title-font-weight, inherit);
 }
 
 .related-notes-list-item a:hover {
@@ -35,7 +40,7 @@
   cursor: pointer;
 }
 
-.excerpt-length-input {
+.related-notes-narrow-number-input {
   width: 4em;
 }
 
