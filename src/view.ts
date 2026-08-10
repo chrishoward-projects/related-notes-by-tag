@@ -19,6 +19,12 @@ export class RelatedNotesView extends ItemView {
   private isExpandAllMode: boolean = false;
   private expandCollapseButton: HTMLElement | null = null;
   private renderGeneration = 0;
+  private searchQuery: string = '';
+  private searchMatchMode: 'any' | 'all' = 'any';
+  private lastActiveFilePath: string | null = null;
+  private currentRelatedNotesMap: Map<string, FileWithMatchedTags[]> | null = null;
+  private currentExcerpts: Map<string, string> = new Map();
+  private listContainerEl: HTMLElement | null = null;
   
   async handleSortChange(mode: 'name'|'date'|'created') {
     this.plugin.settings.defaultSortMode = mode;
@@ -171,6 +177,12 @@ export class RelatedNotesView extends ItemView {
     const activeFile = this.getActiveFile();
     if (!activeFile) return;
 
+    if (activeFile.path !== this.lastActiveFilePath) {
+      this.searchQuery = '';
+      this.searchMatchMode = 'any';
+      this.lastActiveFilePath = activeFile.path;
+    }
+
     const analysisResult = this.tagAnalyzer.analyzeRelatedNotes(activeFile, this.plugin.settings);
 
     const isShowAllMode = this.plugin.settings.defaultFilterMode === 'all';
@@ -189,9 +201,115 @@ export class RelatedNotesView extends ItemView {
     const excerpts = await this.getExcerptsIfNeeded(analysisResult.relatedNotesMap);
     if (generation !== this.renderGeneration) return;
 
-    this.renderTagGroups(analysisResult.relatedNotesMap, excerpts);
+    this.currentRelatedNotesMap = analysisResult.relatedNotesMap;
+    this.currentExcerpts = excerpts;
 
+    this.renderSearchField(this.container);
+    this.listContainerEl = this.container.createDiv();
+    this.renderFilteredList();
+  }
+
+  private renderSearchField(container: HTMLElement): void {
+    const searchContainer = container.createDiv(CSS_CLASSES.SEARCH_CONTAINER);
+    const input = searchContainer.createEl('input', {
+      type: 'search',
+      cls: CSS_CLASSES.SEARCH_INPUT,
+      attr: {
+        placeholder: 'Search notes or #tags…',
+        'aria-label': 'Search related notes'
+      }
+    });
+    input.value = this.searchQuery;
+
+    input.addEventListener('input', () => {
+      this.searchQuery = input.value;
+      this.renderFilteredList();
+    });
+
+    input.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && input.value) {
+        e.preventDefault();
+        input.value = '';
+        this.searchQuery = '';
+        this.renderFilteredList();
+      }
+    });
+
+    this.renderSearchMatchModeToggle(searchContainer);
+  }
+
+  private renderSearchMatchModeToggle(container: HTMLElement): void {
+    const toggleEl = container.createDiv(CSS_CLASSES.SEARCH_MATCH_TOGGLE);
+
+    const modes: { mode: 'any' | 'all'; label: string; title: string }[] = [
+      { mode: 'any', label: 'ANY', title: 'Match any word or tag (OR)' },
+      { mode: 'all', label: 'ALL', title: 'Match every word and tag (AND)' }
+    ];
+
+    modes.forEach(({ mode, label, title }) => {
+      const button = toggleEl.createEl('button', {
+        text: label,
+        cls: `${CSS_CLASSES.SEARCH_MATCH_TOGGLE_BUTTON}${this.searchMatchMode === mode ? ' is-active' : ''}`,
+        attr: { title, 'aria-pressed': (this.searchMatchMode === mode).toString() }
+      });
+
+      button.addEventListener('click', () => {
+        if (this.searchMatchMode === mode) return;
+        this.searchMatchMode = mode;
+        this.renderFilteredList();
+
+        toggleEl.querySelectorAll(`.${CSS_CLASSES.SEARCH_MATCH_TOGGLE_BUTTON}`).forEach(el => {
+          el.classList.remove('is-active');
+          el.setAttribute('aria-pressed', 'false');
+        });
+        button.classList.add('is-active');
+        button.setAttribute('aria-pressed', 'true');
+      });
+    });
+  }
+
+  private renderFilteredList(): void {
+    if (!this.listContainerEl || !this.currentRelatedNotesMap) return;
+
+    this.captureCurrentState();
+    this.listContainerEl.empty();
+
+    const filteredMap = this.filterRelatedNotesMap(this.currentRelatedNotesMap, this.searchQuery);
+
+    if (filteredMap.size === 0) {
+      this.listContainerEl.createEl('p', { text: 'No notes match your search.' });
+      return;
+    }
+
+    this.renderTagGroups(filteredMap, this.currentExcerpts, this.listContainerEl);
     this.restoreState();
+  }
+
+  private filterRelatedNotesMap(relatedNotesMap: Map<string, FileWithMatchedTags[]>, query: string): Map<string, FileWithMatchedTags[]> {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return relatedNotesMap;
+
+    const tokens = trimmedQuery.toLowerCase().split(/\s+/).filter(token => token !== '#');
+
+    const matchesQuery = (fileWithTags: FileWithMatchedTags): boolean => {
+      const title = fileWithTags.file.basename.toLowerCase();
+      const tags = fileWithTags.matchedTags.map(tag => tag.toLowerCase());
+
+      const tokenMatches = (token: string): boolean =>
+        token.startsWith('#') ? tags.some(tag => tag.includes(token)) : title.includes(token);
+
+      return this.searchMatchMode === 'all' ? tokens.every(tokenMatches) : tokens.some(tokenMatches);
+    };
+
+    const filteredMap = new Map<string, FileWithMatchedTags[]>();
+    relatedNotesMap.forEach((files, tag) => {
+      const filteredFiles = files.filter(matchesQuery);
+      if (filteredFiles.length > 0) {
+        filteredMap.set(tag, filteredFiles);
+      }
+    });
+
+    return filteredMap;
   }
 
   private async getExcerptsIfNeeded(relatedNotesMap: Map<string, FileWithMatchedTags[]>): Promise<Map<string, string>> {
@@ -261,7 +379,7 @@ export class RelatedNotesView extends ItemView {
     return activeFile;
   }
 
-  private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>): void {
+  private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>, targetContainer: HTMLElement): void {
     // Convert Map to array and sort tag groups per the tag sort setting
     const sortedTagEntries = Array.from(relatedNotesMap.entries())
       .sort(([tagA, filesA], [tagB, filesB]) => {
@@ -277,7 +395,7 @@ export class RelatedNotesView extends ItemView {
         ? savedState 
         : this.plugin.settings.defaultGroupState === 'collapsed';
       
-      const tagGroupEl = this.container.createDiv({ 
+      const tagGroupEl = targetContainer.createDiv({
         cls: `${CSS_CLASSES.TAG_GROUP} ${shouldBeCollapsed ? 'collapsed' : 'expanded'}`
       });
 

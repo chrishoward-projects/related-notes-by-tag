@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.7.0]
+
+### Added
+- Search field in the panel, between the toolbar and the notes list, to filter the currently displayed related notes by title word or `#tag`. An ANY/ALL toggle next to the field controls how multiple terms combine: ANY (default) matches notes containing any of the words/tags, ALL requires every one of them. Tag terms match by substring against the note's matched tags, so `#proj` matches `#project`
+
 ## [0.6.0]
 
 ### Added

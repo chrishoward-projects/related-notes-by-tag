@@ -33,7 +33,11 @@ export const CSS_CLASSES = {
   PREVIEW: 'related-notes-preview',
   PREVIEW_LOADED: 'is-loaded',
   INSTRUCTIONS: 'related-notes-instructions',
-  EXCERPT: 'related-notes-excerpt'
+  EXCERPT: 'related-notes-excerpt',
+  SEARCH_CONTAINER: 'related-notes-search-container',
+  SEARCH_INPUT: 'related-notes-search-input',
+  SEARCH_MATCH_TOGGLE: 'related-notes-search-match-toggle',
+  SEARCH_MATCH_TOGGLE_BUTTON: 'related-notes-search-match-toggle-button'
 };
 
 export const TIMEOUTS = {
