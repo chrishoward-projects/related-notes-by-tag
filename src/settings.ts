@@ -105,7 +105,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Show notes in all matching tag groups')
-      .setDesc('When off, each note is listed once only, under its first matching tag group, with the number of tags it matched shown beside it. Use the show matched tags button in the panel to see which tags a note has.')
+      .setDesc('When off, each note is listed once only, under the first of its tags alphabetically, with the number of tags it matched shown beside it. Use the show matched tags button in the panel to see which tags a note has.')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.showNotesInAllTagGroups)
         .onChange(async (value) => {

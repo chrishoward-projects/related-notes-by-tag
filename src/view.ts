@@ -463,24 +463,27 @@ export class RelatedNotesView extends ItemView {
   }
 
   /**
-   * Lists each note once only, under the first tag group that contains it in
-   * the displayed group order. Groups left with nothing are dropped rather
-   * than rendered empty.
+   * Each note's home group: the alphabetically first of its matched tags.
+   * Deliberately independent of the displayed group order, so changing the
+   * tag sort reorders the groups without moving notes between them. Rarity
+   * would be a more useful home than alphabetical order, but it shifts with
+   * the current result set, so searching would silently re-home notes.
    */
-  private claimNotesByFirstTagGroup(entries: [string, FileWithMatchedTags[]][]): [string, FileWithMatchedTags[]][] {
-    const claimedPaths = new Set<string>();
-    const claimedEntries: [string, FileWithMatchedTags[]][] = [];
+  private homeTagFor(fileWithTags: FileWithMatchedTags): string | undefined {
+    return [...fileWithTags.matchedTags].sort((a, b) => a.localeCompare(b))[0];
+  }
 
-    for (const [tag, files] of entries) {
-      const unclaimedFiles = files.filter(({ file }) => !claimedPaths.has(file.path));
-      unclaimedFiles.forEach(({ file }) => claimedPaths.add(file.path));
-
-      if (unclaimedFiles.length > 0) {
-        claimedEntries.push([tag, unclaimedFiles]);
-      }
-    }
-
-    return claimedEntries;
+  /**
+   * Lists each note once only, under its home tag group. Groups left with
+   * nothing are dropped rather than rendered empty.
+   */
+  private claimNotesByHomeTag(entries: [string, FileWithMatchedTags[]][]): [string, FileWithMatchedTags[]][] {
+    return entries
+      .map(([tag, files]): [string, FileWithMatchedTags[]] => [
+        tag,
+        files.filter(fileWithTags => this.homeTagFor(fileWithTags) === tag)
+      ])
+      .filter(([, files]) => files.length > 0);
   }
 
   private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>, targetContainer: HTMLElement): void {
@@ -495,7 +498,7 @@ export class RelatedNotesView extends ItemView {
 
     const displayedTagEntries = this.plugin.settings.showNotesInAllTagGroups
       ? sortedTagEntries
-      : this.claimNotesByFirstTagGroup(sortedTagEntries);
+      : this.claimNotesByHomeTag(sortedTagEntries);
 
     displayedTagEntries.forEach(([tag, files]) => {
       const savedState = this.tagGroupStates.get(tag);

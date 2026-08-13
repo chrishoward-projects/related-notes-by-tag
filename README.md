@@ -61,7 +61,7 @@ Access plugin settings through Obsidian Settings > Plugin Options > Related Note
 * **Default Sort Mode**: Choose how related notes are sorted by default
 * **Excluded Tags**: Specify tags to ignore when finding related notes (# prefix optional)
 * **Default Group State**: Set whether tag groups start collapsed or expanded
-* **Show Notes in All Matching Tag Groups**: Turn off to list each note once only, under its first matching tag group, with a count of the tags it matched
+* **Show Notes in All Matching Tag Groups**: Turn off to list each note once only, under the first of its tags alphabetically, with a count of the tags it matched
 
 ### Titles and Excerpts
 * **Note Display Mode**: Show the title, an excerpt of the note's content, or both
