@@ -4,7 +4,7 @@ Discover related content in your Obsidian vault through tag-based connections. T
 
 If you're a heavy tag user, this plugin makes tags even more useful.
 
-![1.00](assets/images/screenshot-related-tags.png)
+![v0.7.0](assets/images/screenshot-v0.7.0@2x.jpg)
 
 ## Features
 
