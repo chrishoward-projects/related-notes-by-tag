@@ -14,6 +14,8 @@ export interface DropdownConfig {
   ariaLabel: string;
   /** When set, the trigger's icon is swapped to reflect the newly selected value. */
   iconForValue?: (value: string | number) => string;
+  /** Renders the trigger greyed out and unclickable. */
+  disabled?: boolean;
 }
 
 export class UIRenderer {
@@ -57,13 +59,17 @@ export class UIRenderer {
     }
     
     const trigger = dropdownContainer.createEl('button', {
-      cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} clickable-icon`,
+      cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} clickable-icon${config.disabled ? ` ${CSS_CLASSES.DROPDOWN_DISABLED}` : ''}`,
       attr: {
         'aria-label': config.ariaLabel,
         'aria-haspopup': 'true',
         'aria-expanded': 'false'
       }
     });
+
+    if (config.disabled) {
+      trigger.disabled = true;
+    }
     // Create SVG element from icon string using DOM parser
     const parser = new DOMParser();
     const svgDoc = parser.parseFromString(config.icon, 'image/svg+xml');
@@ -168,7 +174,8 @@ export class UIRenderer {
   createTagSortDropdown(
     container: HTMLElement,
     currentMode: 'name' | 'count',
-    onTagSortChange: (mode: 'name' | 'count') => void
+    onTagSortChange: (mode: 'name' | 'count') => void,
+    disabled = false
   ): HTMLElement {
     const options: DropdownOption[] = [
       { value: TAG_SORT_MODES.NAME, label: TAG_SORT_LABELS[TAG_SORT_MODES.NAME], isActive: currentMode === TAG_SORT_MODES.NAME },
@@ -180,8 +187,46 @@ export class UIRenderer {
       options,
       onItemClick: (value) => onTagSortChange(value as 'name' | 'count'),
       containerClass: CSS_CLASSES.TAG_SORT_CONTROLS,
-      ariaLabel: 'Sort tag groups'
+      ariaLabel: 'Sort tag groups',
+      disabled
     });
+  }
+
+  createListViewToggleButton(
+    container: HTMLElement,
+    currentMode: 'tag' | 'title',
+    onToggle: (mode: 'tag' | 'title') => void
+  ): HTMLElement {
+    const button = container.createEl('button', {
+      cls: `${CSS_CLASSES.DROPDOWN_TRIGGER} ${CSS_CLASSES.LIST_VIEW_CONTROLS} clickable-icon`
+    });
+
+    this.updateListViewToggleIcon(button, currentMode);
+
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.closeAllDropdowns();
+
+      const nextMode = button.getAttribute('data-list-view-mode') === 'tag' ? 'title' : 'tag';
+      onToggle(nextMode);
+    });
+
+    return button;
+  }
+
+  updateListViewToggleIcon(button: HTMLElement, mode: 'tag' | 'title'): void {
+    // Icon shows the current view; the label says what pressing does, matching
+    // the other toggle buttons in this toolbar
+    const label = mode === 'tag' ? 'List notes by title' : 'Group notes by tag';
+    button.setAttribute('data-list-view-mode', mode);
+    button.setAttribute('title', label);
+    button.setAttribute('aria-label', label);
+
+    button.empty();
+    const parser = new DOMParser();
+    const icon = mode === 'tag' ? ICONS.HASH : ICONS.FILE_TYPE;
+    const svgDoc = parser.parseFromString(icon, 'image/svg+xml');
+    button.appendChild(svgDoc.documentElement);
   }
 
   createFilterDropdown(
@@ -236,6 +281,11 @@ export class UIRenderer {
     return headerEl.createDiv(CSS_CLASSES.ACTION_BUTTONS);
   }
 
+  /** Separates the dropdown controls from the toggle buttons. */
+  createToolbarSpacer(container: HTMLElement): HTMLElement {
+    return container.createDiv(CSS_CLASSES.TOOLBAR_SPACER);
+  }
+
   createTagsToggleButton(
     container: HTMLElement,
     isActive: boolean,
@@ -287,19 +337,24 @@ export class UIRenderer {
   createExpandCollapseButton(
     container: HTMLElement,
     isExpandMode: boolean,
-    onToggle: (newMode: boolean) => void
+    onToggle: (newMode: boolean) => void,
+    disabled = false
   ): HTMLElement {
     const buttonLabel = isExpandMode ? 'Expand all groups' : 'Collapse all groups';
     const button = container.createEl('button', {
-      cls: 'related-notes-expand-collapse clickable-icon',
+      cls: `related-notes-expand-collapse clickable-icon${disabled ? ` ${CSS_CLASSES.DROPDOWN_DISABLED}` : ''}`,
       attr: {
         title: buttonLabel,
         'aria-label': buttonLabel
       }
     });
-    
+
+    if (disabled) {
+      button.disabled = true;
+    }
+
     this.updateExpandCollapseIcon(button, isExpandMode);
-    
+
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       

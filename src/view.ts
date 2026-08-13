@@ -50,6 +50,12 @@ export class RelatedNotesView extends ItemView {
     await this.updateView();
   }
 
+  async handleListViewModeChange(mode: 'tag' | 'title') {
+    this.plugin.settings.listViewMode = mode;
+    await this.plugin.saveSettings();
+    await this.updateView();
+  }
+
   async handleTagsToggle(showTags: boolean) {
     this.plugin.settings.showMatchedTags = showTags;
     await this.plugin.saveSettings();
@@ -222,7 +228,7 @@ export class RelatedNotesView extends ItemView {
       type: 'search',
       cls: CSS_CLASSES.SEARCH_INPUT,
       attr: {
-        placeholder: 'Search notes or #tags…',
+        placeholder: 'Search notes or #tags. Use - to exclude',
         'aria-label': 'Search related notes'
       }
     });
@@ -275,8 +281,29 @@ export class RelatedNotesView extends ItemView {
       return;
     }
 
+    if (this.plugin.settings.listViewMode === 'title') {
+      this.renderTitleList(filteredMap, this.currentExcerpts, this.listContainerEl);
+      return;
+    }
+
     this.renderTagGroups(filteredMap, this.currentExcerpts, this.listContainerEl);
     this.restoreState();
+  }
+
+  /**
+   * Flat list of every matching note, ungrouped. A note matching several tags
+   * appears once, with the count of tags it matched.
+   */
+  private renderTitleList(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>, targetContainer: HTMLElement): void {
+    const uniqueNotes = new Map<string, FileWithMatchedTags>();
+    relatedNotesMap.forEach(files => {
+      files.forEach(fileWithTags => uniqueNotes.set(fileWithTags.file.path, fileWithTags));
+    });
+
+    const sortedFiles = this.tagAnalyzer.sortFiles([...uniqueNotes.values()], this.plugin.settings.defaultSortMode);
+
+    const listEl = targetContainer.createEl('ul', { cls: CSS_CLASSES.NOTES_LIST });
+    this.renderFileList(listEl, sortedFiles, excerpts, true);
   }
 
   private collectUniqueFiles(relatedNotesMap: Map<string, FileWithMatchedTags[]>): TFile[] {
@@ -295,14 +322,36 @@ export class RelatedNotesView extends ItemView {
     return new Map(entries);
   }
 
+  /**
+   * Splits a query into terms to match and terms to exclude, the latter marked
+   * by a leading '-'. Terms carrying nothing to match on ('-', '#', '-#') are
+   * dropped so a half-typed term does not filter everything out.
+   */
+  private parseSearchTokens(query: string): { includeTokens: string[]; excludeTokens: string[] } {
+    const includeTokens: string[] = [];
+    const excludeTokens: string[] = [];
+
+    for (const rawToken of query.toLowerCase().split(/\s+/)) {
+      const isExclusion = rawToken.startsWith('-');
+      const token = isExclusion ? rawToken.slice(1) : rawToken;
+
+      if (!token || token === '#') continue;
+
+      (isExclusion ? excludeTokens : includeTokens).push(token);
+    }
+
+    return { includeTokens, excludeTokens };
+  }
+
   private async filterRelatedNotesMap(relatedNotesMap: Map<string, FileWithMatchedTags[]>, query: string): Promise<Map<string, FileWithMatchedTags[]>> {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) return relatedNotesMap;
 
-    const tokens = trimmedQuery.toLowerCase().split(/\s+/).filter(token => token !== '#');
-    const wordTokens = tokens.filter(token => !token.startsWith('#'));
+    const { includeTokens, excludeTokens } = this.parseSearchTokens(trimmedQuery);
+    if (includeTokens.length === 0 && excludeTokens.length === 0) return relatedNotesMap;
 
-    const contentByPath = wordTokens.length > 0
+    const needsContent = [...includeTokens, ...excludeTokens].some(token => !token.startsWith('#'));
+    const contentByPath = needsContent
       ? await this.readFileContents(this.collectUniqueFiles(relatedNotesMap))
       : new Map<string, string>();
 
@@ -314,7 +363,13 @@ export class RelatedNotesView extends ItemView {
       const tokenMatches = (token: string): boolean =>
         token.startsWith('#') ? tags.some(tag => tag.includes(token)) : (title.includes(token) || content.includes(token));
 
-      return this.searchMatchMode === 'all' ? tokens.every(tokenMatches) : tokens.some(tokenMatches);
+      // Exclusions always win, whichever way the match mode combines the rest
+      if (excludeTokens.some(tokenMatches)) return false;
+
+      // Excluding without including narrows the existing list rather than emptying it
+      if (includeTokens.length === 0) return true;
+
+      return this.searchMatchMode === 'all' ? includeTokens.every(tokenMatches) : includeTokens.some(tokenMatches);
     };
 
     const filteredMap = new Map<string, FileWithMatchedTags[]>();
@@ -348,7 +403,9 @@ export class RelatedNotesView extends ItemView {
 
   private renderControls(headerEl: HTMLElement): void {
     const actionButtons = this.uiRenderer.createActionButtonsContainer(headerEl);
-    
+    const isTitleView = this.plugin.settings.listViewMode === 'title';
+
+    // Dropdowns first, then the toggle buttons, separated by a spacer
     this.uiRenderer.createSortDropdown(
       actionButtons,
       this.plugin.settings.defaultSortMode,
@@ -361,17 +418,26 @@ export class RelatedNotesView extends ItemView {
       (mode) => void this.handleFilterChange(mode)
     );
 
+    this.uiRenderer.createTagSortDropdown(
+      actionButtons,
+      this.plugin.settings.defaultTagSortMode,
+      (mode) => void this.handleTagSortChange(mode),
+      isTitleView
+    );
+
+    this.uiRenderer.createToolbarSpacer(actionButtons);
+
+    this.uiRenderer.createListViewToggleButton(
+      actionButtons,
+      this.plugin.settings.listViewMode,
+      (mode) => void this.handleListViewModeChange(mode)
+    );
+
     this.uiRenderer.createTagsToggleButton(
       actionButtons,
       this.plugin.settings.showMatchedTags,
       this.plugin.settings.defaultFilterMode === 'all',
       (showTags) => void this.handleTagsToggle(showTags)
-    );
-
-    this.uiRenderer.createTagSortDropdown(
-      actionButtons,
-      this.plugin.settings.defaultTagSortMode,
-      (mode) => void this.handleTagSortChange(mode)
     );
 
     // Initialize button state - opposite of defaultGroupState
@@ -380,7 +446,8 @@ export class RelatedNotesView extends ItemView {
     this.expandCollapseButton = this.uiRenderer.createExpandCollapseButton(
       actionButtons,
       this.isExpandAllMode,
-      (newMode) => this.handleExpandCollapseToggle(newMode)
+      (newMode) => this.handleExpandCollapseToggle(newMode),
+      isTitleView
     );
   }
 
@@ -395,6 +462,27 @@ export class RelatedNotesView extends ItemView {
     return activeFile;
   }
 
+  /**
+   * Lists each note once only, under the first tag group that contains it in
+   * the displayed group order. Groups left with nothing are dropped rather
+   * than rendered empty.
+   */
+  private claimNotesByFirstTagGroup(entries: [string, FileWithMatchedTags[]][]): [string, FileWithMatchedTags[]][] {
+    const claimedPaths = new Set<string>();
+    const claimedEntries: [string, FileWithMatchedTags[]][] = [];
+
+    for (const [tag, files] of entries) {
+      const unclaimedFiles = files.filter(({ file }) => !claimedPaths.has(file.path));
+      unclaimedFiles.forEach(({ file }) => claimedPaths.add(file.path));
+
+      if (unclaimedFiles.length > 0) {
+        claimedEntries.push([tag, unclaimedFiles]);
+      }
+    }
+
+    return claimedEntries;
+  }
+
   private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>, targetContainer: HTMLElement): void {
     // Convert Map to array and sort tag groups per the tag sort setting
     const sortedTagEntries = Array.from(relatedNotesMap.entries())
@@ -405,7 +493,11 @@ export class RelatedNotesView extends ItemView {
         return filesB.length - filesA.length;
       });
 
-    sortedTagEntries.forEach(([tag, files]) => {
+    const displayedTagEntries = this.plugin.settings.showNotesInAllTagGroups
+      ? sortedTagEntries
+      : this.claimNotesByFirstTagGroup(sortedTagEntries);
+
+    displayedTagEntries.forEach(([tag, files]) => {
       const savedState = this.tagGroupStates.get(tag);
       const shouldBeCollapsed = savedState !== undefined 
         ? savedState 
@@ -431,7 +523,7 @@ export class RelatedNotesView extends ItemView {
 
       this.setupTagGroupToggle(tagGroupEl, headerEl, tag);
 
-      this.renderFileList(listEl, sortedFiles, excerpts);
+      this.renderFileList(listEl, sortedFiles, excerpts, !this.plugin.settings.showNotesInAllTagGroups);
       
       tagGroupEl.createEl('hr', { cls: CSS_CLASSES.SEPARATOR });
     });
@@ -455,11 +547,12 @@ export class RelatedNotesView extends ItemView {
     });
   }
 
-  private renderFileList(listEl: HTMLElement, files: FileWithMatchedTags[], excerpts: Map<string, string>): void {
+  private renderFileList(listEl: HTMLElement, files: FileWithMatchedTags[], excerpts: Map<string, string>, showTagMatchCount: boolean): void {
     files.forEach(fileWithTags => {
       const listItemEl = listEl.createEl('li', { cls: CSS_CLASSES.LIST_ITEM });
       const excerpt = excerpts.get(fileWithTags.file.path) ?? '';
-      const { linkEl, excerptEl } = this.createFileLink(listItemEl, fileWithTags.file, excerpt);
+      const matchedTagCount = showTagMatchCount ? fileWithTags.matchedTags.length : 0;
+      const { linkEl, excerptEl } = this.createFileLink(listItemEl, fileWithTags.file, excerpt, matchedTagCount);
       this.setupFileLinkEvents(linkEl, fileWithTags.file);
       if (excerptEl) {
         this.setupFileLinkEvents(excerptEl, fileWithTags.file);
@@ -472,7 +565,7 @@ export class RelatedNotesView extends ItemView {
     });
   }
 
-  private createFileLink(container: HTMLElement, file: TFile, excerpt: string): { linkEl: HTMLElement; excerptEl?: HTMLElement } {
+  private createFileLink(container: HTMLElement, file: TFile, excerpt: string, matchedTagCount: number): { linkEl: HTMLElement; excerptEl?: HTMLElement } {
     const mode = this.plugin.settings.noteDisplayMode;
     const titleText = mode === 'excerpt' && excerpt ? excerpt : file.basename;
 
@@ -483,6 +576,15 @@ export class RelatedNotesView extends ItemView {
       cls: CSS_CLASSES.NOTE_LINK
     });
     linkEl.dataset.filePath = file.path;
+
+    // Sibling of the link, not a child, so the title's colour/size/weight
+    // overrides do not apply to it
+    if (matchedTagCount > 1) {
+      container.createSpan({
+        text: ` (${matchedTagCount})`,
+        cls: CSS_CLASSES.TAG_MATCH_COUNT
+      });
+    }
 
     let excerptEl: HTMLElement | undefined;
     if (mode === 'title-excerpt' && excerpt) {

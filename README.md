@@ -15,12 +15,13 @@ If you're a heavy tag user, this plugin makes tags even more useful.
 * **Flexible Sorting**: Sort related notes by name, modified date, or creation date
 * **Tag Group Sorting**: Order the tag groups themselves by tag name (A-Z) or by how many notes each contains
 * **Tag Filtering**: Set minimum tag match requirements (1, 2, or 3+ matching tags)
-* **Show All Notes**: Choose no filter to list all notes in your vault
+* **Show All Notes**: Choose no filter to list every tagged note in your vault, not just those matching the current note
 * **Matched Tags Display**: Option to show which tags are shared between notes
 * **Titles and Excerpts**: Show a note's title, a content excerpt, or both — ideal for Zettelkasten or atomic notes with generic, date-based titles
 * **Collapsible Groups**: Organize results by tag with expandable/collapsible sections
+* **Tag or Title View**: Toggle between notes grouped under each matching tag, and a single flat list by title where each note appears once with a count of the tags it matched
 * **Folder Exclusion**: Exclude files from specific folders
-* **Search Notes**: Filter the listed notes by word or `#tag`, matching note titles and full note content, with a choice of matching any or all of your search terms
+* **Search Notes**: Filter the listed notes by word or `#tag`, matching note titles and full note content, with a choice of matching any or all of your search terms. Prefix a term with `-` to exclude notes matching it
 
 ## Installation
 
@@ -40,13 +41,14 @@ If you're a heavy tag user, this plugin makes tags even more useful.
 ## How to Use
 
 1. **Find the Panel**: After installation, the Related Notes by Tag panel automatically appears in your right sidebar (but stays closed)
-2. **Open the Panel**: Click on the "Related Notes by Tag" tab in the right sidebar, or use the command palette ("Open Related Notes by Tag sidebar")
+2. **Open the Panel**: Click on the "Related Notes by Tag" tab in the right sidebar, or use the command palette ("Related Notes by Tag: Open sidebar")
 3. **Browse Related Notes**: The panel will automatically show notes related to your active note
-4. **Customize Display**: Use the toolbar controls to sort notes, sort the tag groups, filter by tag match count, and toggle tag visibility
-5. **Search**: Use the search field below the toolbar to narrow the listed notes. Type words to match note titles and content, or `#tag` terms to match tags; the icon beside the field chooses whether notes must match any or all of your terms
-6. **Quick Navigation**: Click any note title to open it immediately
-7. **Modifier Support**: Cmd/Ctrl+click to open notes in new tabs
-8. **Preview Support**: Hover with Cmd/Ctrl held to preview note content
+4. **Customize Display**: The toolbar's dropdowns sort notes, filter by tag match count, and sort the tag groups; its buttons switch between tag and title views, show matched tags, and expand or collapse all groups. Tag group sorting and expand/collapse are unavailable in title view, which has no groups
+5. **Expand and Collapse**: In tag view, click a tag group header to expand or collapse that group
+6. **Search**: Use the search field below the toolbar to narrow the listed notes. Type words to match note titles and content, or `#tag` terms to match tags, and prefix a term with `-` to exclude matching notes (`-draft`, `-#archive`); the icon beside the field chooses whether notes must match any or all of your terms
+7. **Quick Navigation**: Click any note title to open it immediately
+8. **Modifier Support**: Cmd/Ctrl+click to open notes in new tabs
+9. **Preview Support**: Hover with Cmd/Ctrl held to preview note content
 
 ## USAGE TIP
 If you're finding a tag for a note has too many notes below it, try switching the filter to *2 matches* or *3 matches*. Also, try adding more tags to your current note
@@ -59,6 +61,7 @@ Access plugin settings through Obsidian Settings > Plugin Options > Related Note
 * **Default Sort Mode**: Choose how related notes are sorted by default
 * **Excluded Tags**: Specify tags to ignore when finding related notes (# prefix optional)
 * **Default Group State**: Set whether tag groups start collapsed or expanded
+* **Show Notes in All Matching Tag Groups**: Turn off to list each note once only, under its first matching tag group, with a count of the tags it matched
 
 ### Titles and Excerpts
 * **Note Display Mode**: Show the title, an excerpt of the note's content, or both

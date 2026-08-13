@@ -18,6 +18,8 @@ export interface RelatedNotesSettings {
   excludedTags: string;
   defaultGroupState: 'collapsed'|'expanded';
   showMatchedTags: boolean;
+  showNotesInAllTagGroups: boolean;
+  listViewMode: 'tag' | 'title';
   excludedFolders: FolderExclusion[];
   noteDisplayMode: NoteDisplayMode;
   excerptLength: number;
@@ -37,6 +39,8 @@ export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   excludedTags: '',
   defaultGroupState: 'expanded',
   showMatchedTags: false,
+  showNotesInAllTagGroups: true,
+  listViewMode: 'tag',
   excludedFolders: [],
   noteDisplayMode: 'title',
   excerptLength: 12,
@@ -96,6 +100,16 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.defaultGroupState)
         .onChange(async (value: 'collapsed'|'expanded') => {
           this.plugin.settings.defaultGroupState = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Show notes in all matching tag groups')
+      .setDesc('When off, each note is listed once only, under its first matching tag group, with the number of tags it matched shown beside it. Use the show matched tags button in the panel to see which tags a note has.')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showNotesInAllTagGroups)
+        .onChange(async (value) => {
+          this.plugin.settings.showNotesInAllTagGroups = value;
           await this.plugin.saveSettings();
         }));
 
@@ -251,10 +265,13 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     });
     instructionsDiv.createEl('p', { text: 'Usage:' });
     instructionsDiv.createEl('ul', {}, (list) => {
+      list.createEl('li', { text: 'Use the toolbar buttons to switch between tag and title views, sort notes, sort tag groups, filter by tag matches, show matched tags and expand or collapse all groups' });
       list.createEl('li', { text: 'Click tag group header to expand/collapse group' });
       list.createEl('li', { text: 'Click note name to open in current tab' });
       list.createEl('li', { text: 'Cmd/ctrl-click note name to open note in a new tab' });
-      list.createEl('li', { text: 'Use the sort dropdown to change sort order' });
+      list.createEl('li', { text: 'Cmd/ctrl-hover note name to preview it' });
+      list.createEl('li', { text: 'Search the listed notes by word or #tag; prefix a term with - to exclude' });
+      list.createEl('li', { text: 'Use the icon beside the search field to toggle matching any or all words/tags' });
     });
   }
 

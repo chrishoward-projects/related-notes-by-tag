@@ -33,6 +33,13 @@
   text-decoration: underline;
 }
 
+/* Count of tags a note matched, shown when notes are listed once only.
+   Deliberately the theme's normal text colour rather than the configurable
+   title colour, so it reads as metadata rather than part of the title. */
+.related-notes-tag-match-count {
+  color: var(--text-normal);
+}
+
 .related-notes-excerpt {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
@@ -84,6 +91,13 @@
 
 .related-notes-action-buttons {
   display: flex;
+  align-items: center;
+}
+
+/* Separates the dropdown controls from the toggle buttons */
+.related-notes-toolbar-spacer {
+  width: 12px;
+  flex: 0 0 auto;
 }
 
 .related-notes-sort-controls {
@@ -112,6 +126,18 @@
 
 .related-notes-dropdown-trigger:hover {
   background-color: var(--background-modifier-hover);
+}
+
+/* Toolbar controls with nothing to act on, such as tag group sorting and
+   expand/collapse all in the title list view. Scoped to the container so it
+   outranks the individual controls' own hover rules on specificity. */
+.related-notes-container button.is-disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.related-notes-container button.is-disabled:hover {
+  background-color: transparent;
 }
 
 .related-notes-dropdown-menu {
