@@ -228,7 +228,7 @@ export class RelatedNotesView extends ItemView {
       type: 'search',
       cls: CSS_CLASSES.SEARCH_INPUT,
       attr: {
-        placeholder: 'Search notes or #tags. Use - to exclude',
+        placeholder: 'Search for words or #tags. Use - to exclude',
         'aria-label': 'Search related notes'
       }
     });
