@@ -5,7 +5,9 @@ export const ICONS = {
   DROPDOWN_CARET: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="m6 9 6 6 6-6"/></svg>',
   RELATED_NOTES: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tags"><path d="M9 5H2v7l6.29 6.29c.94.94 2.48.94 3.42 0l3.58-3.58c.94-.94.94-2.48 0-3.42L9 5Z"/><path d="M6 9.01V9"/><path d="m15 5 6.3 6.3a2.69 2.69 0 0 1 0 3.79L17.5 19a2.69 2.69 0 0 1-3.79 0L10 15.21"/></svg>',
   FILTER_CLEAR: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M12.531 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l.427-.473"/><path d="m16.5 3.5 5 5"/><path d="m21.5 3.5-5 5"/></svg>',
-  TAG_SORT: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>'
+  TAG_SORT: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>',
+  LAYOUT_GRID: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>',
+  GRID_2X2: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M12 3v18"/><path d="M3 12h18"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>'
 };
 
 export const CSS_CLASSES = {
@@ -36,13 +38,20 @@ export const CSS_CLASSES = {
   EXCERPT: 'related-notes-excerpt',
   SEARCH_CONTAINER: 'related-notes-search-container',
   SEARCH_INPUT: 'related-notes-search-input',
-  SEARCH_MATCH_TOGGLE: 'related-notes-search-match-toggle',
-  SEARCH_MATCH_TOGGLE_BUTTON: 'related-notes-search-match-toggle-button'
+  SEARCH_MATCH_CONTROLS: 'related-notes-search-match-controls'
 };
+
+/**
+ * Minimum Obsidian version required by the release after this one. Users below
+ * it are served this version indefinitely via versions.json, so they are told
+ * once that updates have stopped and why.
+ */
+export const NEXT_RELEASE_MIN_APP_VERSION = '1.13.0';
 
 export const TIMEOUTS = {
   VIEW_UPDATE_DELAY: 50,
-  PREVIEW_RENDER_DELAY: 150
+  PREVIEW_RENDER_DELAY: 150,
+  SEARCH_DEBOUNCE_DELAY: 200
 };
 
 export const DIMENSIONS = {

@@ -92,7 +92,7 @@ export class FolderSuggestions {
     };
     
     // Delay adding the click listener to prevent immediate triggering
-    activeWindow.setTimeout(() => {
+    window.setTimeout(() => {
       activeDocument.addEventListener('click', clickOutsideHandler);
     }, 0);
   }

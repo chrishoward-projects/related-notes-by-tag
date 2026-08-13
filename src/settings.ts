@@ -26,6 +26,8 @@ export interface RelatedNotesSettings {
   titleColor: string;
   titleFontSize: number;
   titleFontWeight: string;
+  /** Internal, not user-facing: tracks the one-time Obsidian upgrade notice. */
+  upgradeNoticeShown: boolean;
 }
 
 export const DEFAULT_SETTINGS: RelatedNotesSettings = {
@@ -43,6 +45,7 @@ export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   titleColor: '',
   titleFontSize: 0,
   titleFontWeight: '',
+  upgradeNoticeShown: false,
 };
 
 export class RelatedNotesSettingTab extends PluginSettingTab {
@@ -77,8 +80,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
       .setName('Excluded tags')
       .setDesc('Comma-separated list of tags to exclude from related notes (# prefix optional)')
       .addText(text => text
-        // eslint-disable-next-line obsidianmd/ui/sentence-case
-        .setPlaceholder('e.g. ignore, draft, #private')
+        .setPlaceholder('For example: ignore, draft, #private')
         .setValue(this.plugin.settings.excludedTags)
         .onChange(async (value) => {
           this.plugin.settings.excludedTags = value;
@@ -97,12 +99,10 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
 
-    // Titles and Excerpts Section
+    // Titles and excerpts section
     new Setting(containerEl)
-      // eslint-disable-next-line obsidianmd/ui/sentence-case
-      .setName('Titles and Excerpts')
-      // eslint-disable-next-line obsidianmd/ui/sentence-case
-      .setDesc('Show an excerpt of a note\'s content alongside or instead of its title. Especially useful for Zettelkasten or atomic notes with generic, date-based titles - though a handy preview even when titles are already descriptive.')
+      .setName('Titles and excerpts')
+      .setDesc('Show an excerpt of a note\'s content alongside or instead of its title. Zettelkasten and atomic-note vaults benefit most, where titles are generic dates or identifiers - though it\'s a handy preview even when titles are already descriptive.')
       .setHeading();
 
     new Setting(containerEl)

@@ -12,6 +12,8 @@ export interface DropdownConfig {
   onItemClick: (value: string | number) => void;
   containerClass?: string;
   ariaLabel: string;
+  /** When set, the trigger's icon is swapped to reflect the newly selected value. */
+  iconForValue?: (value: string | number) => string;
 }
 
 export class UIRenderer {
@@ -93,6 +95,13 @@ export class UIRenderer {
           el.classList.remove(CSS_CLASSES.DROPDOWN_ITEM_ACTIVE)
         );
         item.classList.add(CSS_CLASSES.DROPDOWN_ITEM_ACTIVE);
+
+        if (config.iconForValue) {
+          trigger.empty();
+          const parser = new DOMParser();
+          const svgDoc = parser.parseFromString(config.iconForValue(option.value), 'image/svg+xml');
+          trigger.appendChild(svgDoc.documentElement);
+        }
 
         // Return focus to trigger
         trigger.focus();
@@ -193,6 +202,28 @@ export class UIRenderer {
       onItemClick: (value) => onFilterChange(value as 1 | 2 | 3 | 'all'),
       containerClass: CSS_CLASSES.FILTER_CONTROLS,
       ariaLabel: 'Filter by tag count'
+    });
+  }
+
+  createSearchMatchDropdown(
+    container: HTMLElement,
+    currentMode: 'any' | 'all',
+    onModeChange: (mode: 'any' | 'all') => void
+  ): HTMLElement {
+    const iconForMode = (mode: 'any' | 'all') => mode === 'all' ? ICONS.GRID_2X2 : ICONS.LAYOUT_GRID;
+
+    const options: DropdownOption[] = [
+      { value: 'any', label: 'Match ANY words', isActive: currentMode === 'any' },
+      { value: 'all', label: 'Match ALL words', isActive: currentMode === 'all' }
+    ];
+
+    return this.createDropdown(container, {
+      icon: iconForMode(currentMode),
+      iconForValue: (value) => iconForMode(value as 'any' | 'all'),
+      options,
+      onItemClick: (value) => onModeChange(value as 'any' | 'all'),
+      containerClass: CSS_CLASSES.SEARCH_MATCH_CONTROLS,
+      ariaLabel: 'Search match mode'
     });
   }
 

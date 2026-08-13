@@ -100,7 +100,7 @@ export class PreviewManager extends Component {
   }
 
   private renderPreviewContent(file: TFile): void {
-    activeWindow.setTimeout(async () => {
+    window.setTimeout(async () => {
       if (this.previewPopup && this.currentPreviewFile === file && this.isModifierHeld) {
         try {
           // Read the file content directly

@@ -336,34 +336,16 @@
   border-color: var(--interactive-accent);
 }
 
-.related-notes-search-match-toggle {
-  display: flex;
+.related-notes-search-match-controls {
   flex: 0 0 auto;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  overflow: hidden;
 }
 
-.related-notes-search-match-toggle-button {
-  background: none;
-  border: none;
-  padding: 4px 6px;
-  font-size: var(--font-ui-smaller);
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.related-notes-search-match-toggle-button:not(:last-child) {
-  border-right: 1px solid var(--background-modifier-border);
-}
-
-.related-notes-search-match-toggle-button:hover {
-  background-color: var(--background-modifier-hover);
-}
-
-.related-notes-search-match-toggle-button.is-active {
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
+/* This dropdown sits at the far right of the search row, so opening
+   left-anchored (the other toolbar dropdowns' default) would push the menu
+   past the sidebar's right edge. Anchor to the trigger's right edge instead. */
+.related-notes-search-match-controls .related-notes-dropdown-menu {
+  left: auto;
+  right: 0;
 }
 
 /* Focus visible styles for keyboard accessibility */
@@ -389,9 +371,4 @@
   outline: 2px solid var(--interactive-accent);
   outline-offset: 1px;
   border-radius: var(--radius-s);
-}
-
-.related-notes-search-match-toggle-button:focus-visible {
-  outline: 2px solid var(--interactive-accent);
-  outline-offset: -2px;
 }

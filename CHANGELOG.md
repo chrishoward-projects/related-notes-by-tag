@@ -9,7 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.0]
 
 ### Added
-- Search field in the panel, between the toolbar and the notes list, to filter the currently displayed related notes by title word or `#tag`. An ANY/ALL toggle next to the field controls how multiple terms combine: ANY (default) matches notes containing any of the words/tags, ALL requires every one of them. Tag terms match by substring against the note's matched tags, so `#proj` matches `#project`
+- Search field in the panel, between the toolbar and the notes list, to filter the notes currently listed. Plain words match against both the note title and its full body text; terms starting with `#` match against the note's tags by substring, so `#proj` matches `#project`. An icon next to the field opens a dropdown to choose how multiple terms combine - "Match ANY words" (the default) lists notes matching any term, "Match ALL words" requires every term. The icon reflects the active mode. Content matching reads through Obsidian's own file cache and settles shortly after you stop typing
+- "Show all notes" filter mode, listing every tagged note in the vault grouped by tag, rather than only notes sharing tags with the active note
+- Tag group sort order setting, to order the tag groups by tag name (A-Z) or by the number of notes in each group
+- One-time notice for users running Obsidian older than 1.13.0, letting them know 0.7.0 is the last version they will be offered and that updating Obsidian resumes plugin updates. The release after this one requires Obsidian 1.13.0 or newer; users below that continue to be served 0.7.0 automatically via `versions.json`, so nothing breaks for them. Users already on 1.13.0 or newer never see the notice
+
+### Changed
+- Search debouncing now uses Obsidian's own `debounce()` rather than a hand-rolled timer, and all timer calls moved from `activeWindow` to `window`. Beyond following Obsidian's current guidance, this fixes a latent bug: `activeWindow` re-points to whichever window has focus, so a timer set on one window and cleared after the user focused another would not actually be cancelled
+- Replaced the `builtin-modules` build dependency with Node's own `node:module` `builtinModules`, removing a package that duplicates a built-in
+
+### Fixed
+- Settings text that previously suppressed Obsidian's sentence-case lint rule now genuinely complies, so no rule suppressions remain in the source. The "Titles and Excerpts" heading is now "Titles and excerpts", and the excluded tags placeholder reads "For example: ..." rather than "e.g. ..."
+- Search match mode dropdown menu opened past the right edge of the sidebar instead of staying within it
 
 ## [0.6.0]
 

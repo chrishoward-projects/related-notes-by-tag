@@ -1,7 +1,7 @@
-import { Plugin, WorkspaceLeaf, Notice } from 'obsidian';
+import { Plugin, WorkspaceLeaf, Notice, requireApiVersion } from 'obsidian';
 import { RelatedNotesSettings, DEFAULT_SETTINGS, RelatedNotesSettingTab } from './settings';
 import { RelatedNotesView, RELATED_NOTES_BY_TAG_VIEW_TYPE } from './view';
-import { TIMEOUTS } from './constants';
+import { TIMEOUTS, NEXT_RELEASE_MIN_APP_VERSION } from './constants';
 
 export default class RelatedNotesPlugin extends Plugin {
   settings: RelatedNotesSettings;
@@ -37,7 +37,7 @@ export default class RelatedNotesPlugin extends Plugin {
         const view = this.getView();
         if (view && activeLeaf && view.leaf !== activeLeaf && activeLeaf.view.getViewType() === 'markdown') {
           // Defer update to allow click event and other UI changes to complete
-          activeWindow.setTimeout(async () => {
+          window.setTimeout(async () => {
             const currentView = this.getView(); // Re-check view in case it was closed during the timeout
             if (currentView) {
               await currentView.updateView();
@@ -61,8 +61,44 @@ export default class RelatedNotesPlugin extends Plugin {
     // Layout ready handler
     this.app.workspace.onLayoutReady(() => {
       void this.initializePanelInSidebar();
+      void this.maybeShowUpgradeNotice();
     });
 
+  }
+
+  /**
+   * Tells users on an Obsidian older than the next release's minimum, once,
+   * that this is the last version they will be offered. `requiredVersion` is a
+   * parameter rather than a constant read inline so the real gating logic can
+   * be exercised from the developer console without faking the app version.
+   */
+  async maybeShowUpgradeNotice(requiredVersion: string = NEXT_RELEASE_MIN_APP_VERSION): Promise<void> {
+    if (requireApiVersion(requiredVersion)) return;
+    if (this.settings.upgradeNoticeShown) return;
+
+    this.showUpgradeNotice(requiredVersion);
+
+    this.settings.upgradeNoticeShown = true;
+    await this.saveSettings();
+  }
+
+  showUpgradeNotice(requiredVersion: string = NEXT_RELEASE_MIN_APP_VERSION): void {
+    const message = createFragment(frag => {
+      frag.createDiv({ text: 'Related notes by tag' });
+      frag.createEl('br');
+      frag.createDiv({
+        text: `Version ${this.manifest.version} is the last update available for your version of Obsidian.`
+      });
+      frag.createEl('br');
+      frag.createDiv({
+        text: `Later releases need Obsidian ${requiredVersion} or newer. Update Obsidian to keep receiving plugin updates.`
+      });
+      frag.createEl('br');
+      frag.createDiv({ text: 'Click to close this notice' });
+    });
+
+    // Duration 0 keeps the notice up until dismissed; it is shown only once.
+    new Notice(message, 0);
   }
 
   onunload() {

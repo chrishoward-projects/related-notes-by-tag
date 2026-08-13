@@ -1,10 +1,10 @@
-import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, debounce } from 'obsidian';
 import RelatedNotesPlugin from './main';
 import { TagAnalyzer, FileWithMatchedTags } from './tag-analyzer';
 import { PreviewManager } from './preview-manager';
 import { UIRenderer } from './ui-renderer';
 import { ExcerptService } from './excerpt-service';
-import { CSS_CLASSES } from './constants';
+import { CSS_CLASSES, TIMEOUTS } from './constants';
 
 export const RELATED_NOTES_BY_TAG_VIEW_TYPE = 'related-notes-by-tag-view';
 
@@ -25,6 +25,12 @@ export class RelatedNotesView extends ItemView {
   private currentRelatedNotesMap: Map<string, FileWithMatchedTags[]> | null = null;
   private currentExcerpts: Map<string, string> = new Map();
   private listContainerEl: HTMLElement | null = null;
+  private searchGeneration = 0;
+  private debouncedFilteredListUpdate = debounce(
+    () => void this.renderFilteredList(),
+    TIMEOUTS.SEARCH_DEBOUNCE_DELAY,
+    true
+  );
   
   async handleSortChange(mode: 'name'|'date'|'created') {
     this.plugin.settings.defaultSortMode = mode;
@@ -79,6 +85,7 @@ export class RelatedNotesView extends ItemView {
   }
 
   async onClose() {
+    this.clearSearchDebounce();
     this.previewManager.cleanup();
     this.uiRenderer.cleanup();
     this.container.empty();
@@ -206,7 +213,7 @@ export class RelatedNotesView extends ItemView {
 
     this.renderSearchField(this.container);
     this.listContainerEl = this.container.createDiv();
-    this.renderFilteredList();
+    await this.renderFilteredList();
   }
 
   private renderSearchField(container: HTMLElement): void {
@@ -223,7 +230,7 @@ export class RelatedNotesView extends ItemView {
 
     input.addEventListener('input', () => {
       this.searchQuery = input.value;
-      this.renderFilteredList();
+      this.debouncedFilteredListUpdate();
     });
 
     input.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -231,50 +238,37 @@ export class RelatedNotesView extends ItemView {
         e.preventDefault();
         input.value = '';
         this.searchQuery = '';
-        this.renderFilteredList();
+        this.clearSearchDebounce();
+        void this.renderFilteredList();
       }
     });
 
-    this.renderSearchMatchModeToggle(searchContainer);
-  }
-
-  private renderSearchMatchModeToggle(container: HTMLElement): void {
-    const toggleEl = container.createDiv(CSS_CLASSES.SEARCH_MATCH_TOGGLE);
-
-    const modes: { mode: 'any' | 'all'; label: string; title: string }[] = [
-      { mode: 'any', label: 'ANY', title: 'Match any word or tag (OR)' },
-      { mode: 'all', label: 'ALL', title: 'Match every word and tag (AND)' }
-    ];
-
-    modes.forEach(({ mode, label, title }) => {
-      const button = toggleEl.createEl('button', {
-        text: label,
-        cls: `${CSS_CLASSES.SEARCH_MATCH_TOGGLE_BUTTON}${this.searchMatchMode === mode ? ' is-active' : ''}`,
-        attr: { title, 'aria-pressed': (this.searchMatchMode === mode).toString() }
-      });
-
-      button.addEventListener('click', () => {
-        if (this.searchMatchMode === mode) return;
+    this.uiRenderer.createSearchMatchDropdown(
+      searchContainer,
+      this.searchMatchMode,
+      (mode) => {
         this.searchMatchMode = mode;
-        this.renderFilteredList();
-
-        toggleEl.querySelectorAll(`.${CSS_CLASSES.SEARCH_MATCH_TOGGLE_BUTTON}`).forEach(el => {
-          el.classList.remove('is-active');
-          el.setAttribute('aria-pressed', 'false');
-        });
-        button.classList.add('is-active');
-        button.setAttribute('aria-pressed', 'true');
-      });
-    });
+        this.clearSearchDebounce();
+        void this.renderFilteredList();
+      }
+    );
   }
 
-  private renderFilteredList(): void {
+  private clearSearchDebounce(): void {
+    this.debouncedFilteredListUpdate.cancel();
+  }
+
+  private async renderFilteredList(): Promise<void> {
     if (!this.listContainerEl || !this.currentRelatedNotesMap) return;
 
-    this.captureCurrentState();
-    this.listContainerEl.empty();
+    const generation = ++this.searchGeneration;
 
-    const filteredMap = this.filterRelatedNotesMap(this.currentRelatedNotesMap, this.searchQuery);
+    this.captureCurrentState();
+
+    const filteredMap = await this.filterRelatedNotesMap(this.currentRelatedNotesMap, this.searchQuery);
+    if (generation !== this.searchGeneration) return;
+
+    this.listContainerEl.empty();
 
     if (filteredMap.size === 0) {
       this.listContainerEl.createEl('p', { text: 'No notes match your search.' });
@@ -285,18 +279,40 @@ export class RelatedNotesView extends ItemView {
     this.restoreState();
   }
 
-  private filterRelatedNotesMap(relatedNotesMap: Map<string, FileWithMatchedTags[]>, query: string): Map<string, FileWithMatchedTags[]> {
+  private collectUniqueFiles(relatedNotesMap: Map<string, FileWithMatchedTags[]>): TFile[] {
+    const uniqueFiles = new Map<string, TFile>();
+    relatedNotesMap.forEach(files => {
+      files.forEach(({ file }) => uniqueFiles.set(file.path, file));
+    });
+    return [...uniqueFiles.values()];
+  }
+
+  private async readFileContents(files: TFile[]): Promise<Map<string, string>> {
+    const entries = await Promise.all(files.map(async (file): Promise<[string, string]> => {
+      const content = await this.app.vault.cachedRead(file);
+      return [file.path, content.toLowerCase()];
+    }));
+    return new Map(entries);
+  }
+
+  private async filterRelatedNotesMap(relatedNotesMap: Map<string, FileWithMatchedTags[]>, query: string): Promise<Map<string, FileWithMatchedTags[]>> {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) return relatedNotesMap;
 
     const tokens = trimmedQuery.toLowerCase().split(/\s+/).filter(token => token !== '#');
+    const wordTokens = tokens.filter(token => !token.startsWith('#'));
+
+    const contentByPath = wordTokens.length > 0
+      ? await this.readFileContents(this.collectUniqueFiles(relatedNotesMap))
+      : new Map<string, string>();
 
     const matchesQuery = (fileWithTags: FileWithMatchedTags): boolean => {
       const title = fileWithTags.file.basename.toLowerCase();
+      const content = contentByPath.get(fileWithTags.file.path) ?? '';
       const tags = fileWithTags.matchedTags.map(tag => tag.toLowerCase());
 
       const tokenMatches = (token: string): boolean =>
-        token.startsWith('#') ? tags.some(tag => tag.includes(token)) : title.includes(token);
+        token.startsWith('#') ? tags.some(tag => tag.includes(token)) : (title.includes(token) || content.includes(token));
 
       return this.searchMatchMode === 'all' ? tokens.every(tokenMatches) : tokens.some(tokenMatches);
     };
@@ -485,7 +501,7 @@ export class RelatedNotesView extends ItemView {
         this.previewManager.showPreview(file, linkEl);
       } else {
         // Set up a timer to check for modifier key press while hovering
-        hoverTimer = activeWindow.setTimeout(() => {
+        hoverTimer = window.setTimeout(() => {
           if (linkEl.matches(':hover') && this.previewManager.getIsModifierHeld()) {
             this.previewManager.showPreview(file, linkEl);
           }
@@ -495,7 +511,7 @@ export class RelatedNotesView extends ItemView {
     
     linkEl.addEventListener('mouseleave', () => {
       if (hoverTimer) {
-        activeWindow.clearTimeout(hoverTimer);
+        window.clearTimeout(hoverTimer);
       }
       if (!this.previewManager.getIsModifierHeld()) {
         this.previewManager.hidePreview();
