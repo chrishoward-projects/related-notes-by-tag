@@ -9,7 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.1]
 
 ### Changed
+- Changing the default group state setting now takes effect immediately, rather than being overridden by groups the user had already opened or closed in the panel
 - Search field placeholder now reads "Search for words or #tags" rather than "Search notes or #tags", since the search matches words within notes rather than notes themselves
+
+### Fixed
+- Typing in a note could make the editor feel sluggish. Obsidian re-parses the active note on every save, which is frequent while typing, and each of those triggered a full rebuild of the panel: a scan of every note in the vault followed by a complete re-render. Since the panel lists notes by tag, it now rebuilds only when an edit actually changes the active note's tags - editing prose leaves its contents identical, so those edits are ignored outright
+- Typing a tag rebuilt the panel repeatedly as it was written, once for each partial tag Obsidian saved along the way, since `#pro` is as valid a tag as `#project`. The panel now waits for a longer pause while a tag is still being written - anywhere in a note's frontmatter, or immediately after an unfinished inline tag - so writing a tag produces one rebuild rather than several, while a finished change still settles quickly
+- The panel kept rebuilding itself while hidden behind a collapsed sidebar or another sidebar tab, where the view stays alive but nothing is visible. Updates are now skipped while it is off screen and applied as soon as it is revealed
+- Excerpt collection gathered one entry per tag a note matched before deduplicating, which multiplied the work several times over in the show all notes mode
+- Searching was slow with the show all notes mode active. Every keystroke re-read and re-lowercased the body of every note in the list, which in that mode is the whole vault. Note bodies are now cached until the note is modified, so only the first search of a given note pays that cost and later keystrokes filter what is already in memory. The cache is dropped when the active note changes, since the search is cleared then too
+- The panel built every note in the list into the page at once, however long that list was, which is what made large lists slow to show, slow to search and slow to sort. It now builds the first hundred or so and adds the rest as the list is scrolled, so the cost of showing a list no longer grows with its length. Nothing is left out - scrolling far enough still reaches everything. Notes inside a collapsed tag group are left unbuilt until the group is opened, since nothing there is on screen to begin with
 
 ## [0.7.0]
 

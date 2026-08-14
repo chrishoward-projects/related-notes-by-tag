@@ -1,10 +1,32 @@
-import { Plugin, WorkspaceLeaf, Notice, requireApiVersion } from 'obsidian';
+import { Plugin, WorkspaceLeaf, Notice, requireApiVersion, debounce } from 'obsidian';
 import { RelatedNotesSettings, DEFAULT_SETTINGS, RelatedNotesSettingTab } from './settings';
 import { RelatedNotesView, RELATED_NOTES_BY_TAG_VIEW_TYPE } from './view';
 import { TIMEOUTS, NEXT_RELEASE_MIN_APP_VERSION } from './constants';
 
 export default class RelatedNotesPlugin extends Plugin {
   settings: RelatedNotesSettings;
+
+  /** Set when an update was skipped because the panel was off screen. */
+  private refreshPending = false;
+
+  /**
+   * Two settling times for the same rebuild. Obsidian saves periodically while
+   * you type, and every save re-parses the note, so a tag typed as #p, #pr,
+   * #pro each arrive as a real tag change several seconds apart - too far apart
+   * for one short debounce to merge. Waiting longer while a tag is still being
+   * typed keeps those out, without making a finished change feel sluggish.
+   */
+  private debouncedRefresh = debounce(
+    () => void this.refreshView(),
+    TIMEOUTS.TAG_UPDATE_DELAY,
+    true
+  );
+
+  private debouncedComposingRefresh = debounce(
+    () => void this.refreshView(),
+    TIMEOUTS.TAG_COMPOSE_DELAY,
+    true
+  );
 
   async onload() {
 
@@ -31,31 +53,41 @@ export default class RelatedNotesPlugin extends Plugin {
     // Event listeners
     this.registerEvent(
       this.app.workspace.on('active-leaf-change', (activeLeaf) => {
-        // Check if our view exists, if an activeLeaf is provided,
-        // if our view's leaf is not the one that just became active,
-        // and if the newly active leaf is a markdown view.
         const view = this.getView();
-        if (view && activeLeaf && view.leaf !== activeLeaf && activeLeaf.view.getViewType() === 'markdown') {
-          // Defer update to allow click event and other UI changes to complete
-          window.setTimeout(async () => {
-            const currentView = this.getView(); // Re-check view in case it was closed during the timeout
-            if (currentView) {
-              await currentView.updateView();
-            }
-          }, TIMEOUTS.VIEW_UPDATE_DELAY);
+        if (!view || !activeLeaf) return;
+
+        // Our own panel becoming active can mean it was just revealed, so any
+        // update skipped while it was hidden needs applying now
+        if (view.leaf === activeLeaf) {
+          this.refreshIfPending();
+          return;
         }
+
+        if (activeLeaf.view.getViewType() !== 'markdown') return;
+
+        // Defer update to allow click event and other UI changes to complete
+        window.setTimeout(() => void this.refreshView(), TIMEOUTS.VIEW_UPDATE_DELAY);
       })
     );
 
     this.registerEvent(
-      this.app.metadataCache.on('changed', async (file) => {
-        // Only update if the changed file is the active file and the view is open
+      this.app.metadataCache.on('changed', (file) => {
         const view = this.getView();
-        if (view && this.app.workspace.getActiveFile()?.path === file.path) {
-          await view.updateView();
-        }
-        // Only update for active file changes to reduce excessive updates
+        if (!view) return;
+
+        // Only edits to the active note can change what the panel shows, and
+        // only then if they changed its tags - this lists notes by tag, so
+        // editing a note's prose leaves the panel's contents identical
+        if (this.app.workspace.getActiveFile()?.path !== file.path) return;
+        if (!view.hasTagsChanged(file)) return;
+
+        this.scheduleRefresh();
       })
+    );
+
+    // Expanding a collapsed sidebar is not a leaf change, so catch it here
+    this.registerEvent(
+      this.app.workspace.on('layout-change', () => this.refreshIfPending())
     );
 
     // Layout ready handler
@@ -102,7 +134,75 @@ export default class RelatedNotesPlugin extends Plugin {
   }
 
   onunload() {
-    // No need to manage view references
+    this.debouncedRefresh.cancel();
+    this.debouncedComposingRefresh.cancel();
+  }
+
+  /**
+   * Queues a rebuild, waiting longer if a tag is still being typed. Only one
+   * of the two is ever pending, so the wait reflects the most recent edit.
+   */
+  private scheduleRefresh(): void {
+    if (this.isComposingTag()) {
+      this.debouncedRefresh.cancel();
+      this.debouncedComposingRefresh();
+      return;
+    }
+
+    this.debouncedComposingRefresh.cancel();
+    this.debouncedRefresh();
+  }
+
+  /**
+   * Whether the cursor is somewhere a tag is still being written.
+   */
+  private isComposingTag(): boolean {
+    const activeEditor = this.app.workspace.activeEditor;
+    const editor = activeEditor?.editor;
+    if (!activeEditor?.file || !editor) return false;
+
+    const cursor = editor.getCursor();
+
+    // This is only asked once the tags have changed, so the cursor sitting
+    // anywhere in frontmatter means it is the tags field being edited
+    const frontmatter = this.app.metadataCache.getFileCache(activeEditor.file)?.frontmatterPosition;
+    if (frontmatter && cursor.line >= frontmatter.start.line && cursor.line <= frontmatter.end.line) {
+      return true;
+    }
+
+    // Inline: a tag ends at whitespace, so one running up to the cursor is
+    // unfinished, and anything else means the user has moved on from it
+    return /#[^\s#]*$/.test(editor.getLine(cursor.line).slice(0, cursor.ch));
+  }
+
+  /**
+   * Rebuilds the panel, unless it is hidden behind a collapsed sidebar or
+   * another sidebar tab. The view instance stays alive there, so without this
+   * check it would keep scanning the vault for nobody. A skipped update is
+   * remembered and applied as soon as the panel is back on screen.
+   */
+  private async refreshView(): Promise<void> {
+    const view = this.getView();
+    if (!view) return;
+
+    if (!view.containerEl.isShown()) {
+      this.refreshPending = true;
+      return;
+    }
+
+    this.refreshPending = false;
+    await view.updateView();
+  }
+
+  /** Lets a change to the default group state override earlier choices. */
+  resetGroupStates(): void {
+    this.getView()?.resetGroupStates();
+  }
+
+  private refreshIfPending(): void {
+    if (this.refreshPending) {
+      void this.refreshView();
+    }
   }
 
   private getView(): RelatedNotesView | null {
@@ -123,12 +223,9 @@ export default class RelatedNotesPlugin extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
-    const view = this.getView();
-    if (view) {
-      view.clearExcerptCache();
-      // Trigger a view update if settings change that affect display
-      await view.updateView();
-    }
+    // Settings can change how notes are displayed, so cached excerpts may be stale
+    this.getView()?.clearExcerptCache();
+    await this.refreshView();
   }
 
   async initializePanelInSidebar() {

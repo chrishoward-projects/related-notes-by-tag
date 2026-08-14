@@ -19,13 +19,8 @@ export class TagAnalyzer {
       return { relatedNotesMap: this.findAllNotes(activeFile, settings), currentNoteTags: [] };
     }
 
-    const fileCache = this.app.metadataCache.getFileCache(activeFile);
-    if (!fileCache) {
-      return { relatedNotesMap: new Map(), currentNoteTags: [] };
-    }
-
-    const currentNoteTags = getAllTags(fileCache);
-    if (!currentNoteTags || currentNoteTags.length === 0) {
+    const currentNoteTags = this.getUniqueTags(activeFile);
+    if (currentNoteTags.length === 0) {
       return { relatedNotesMap: new Map(), currentNoteTags: [] };
     }
 
@@ -91,13 +86,7 @@ export class TagAnalyzer {
 
       if (this.isFileInExcludedFolder(file, settings)) continue;
 
-      const cache = this.app.metadataCache.getFileCache(file);
-      if (!cache) continue;
-
-      const tagsInFile = getAllTags(cache);
-      if (!tagsInFile) continue;
-
-      const fileTags = this.getFilteredTags(tagsInFile, settings.excludedTags);
+      const fileTags = this.getFilteredTags(this.getUniqueTags(file), settings.excludedTags);
       if (fileTags.length === 0) continue;
 
       const fileWithTags: FileWithMatchedTags = {
@@ -116,14 +105,23 @@ export class TagAnalyzer {
     return allNotesMap;
   }
 
-  private getOverlappingTags(file: TFile, currentTags: string[]): string[] {
+  private getUniqueTags(file: TFile): string[] {
     const cache = this.app.metadataCache.getFileCache(file);
     if (!cache) return [];
+    return [...new Set(getAllTags(cache) ?? [])];
+  }
 
-    const tagsInFile = getAllTags(cache);
-    if (!tagsInFile) return [];
+  /**
+   * Stable representation of a file's tags, for detecting whether an edit
+   * actually changed them. The panel lists notes by tag, so an edit leaving
+   * this untouched cannot change what it shows.
+   */
+  getTagSignature(file: TFile): string {
+    return this.getUniqueTags(file).sort((a, b) => a.localeCompare(b)).join(',');
+  }
 
-    const uniqueTagsInFile = [...new Set(tagsInFile)];
+  private getOverlappingTags(file: TFile, currentTags: string[]): string[] {
+    const uniqueTagsInFile = this.getUniqueTags(file);
     return currentTags.filter(tag => uniqueTagsInFile.includes(tag));
   }
 

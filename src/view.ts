@@ -4,9 +4,13 @@ import { TagAnalyzer, FileWithMatchedTags } from './tag-analyzer';
 import { PreviewManager } from './preview-manager';
 import { UIRenderer } from './ui-renderer';
 import { ExcerptService } from './excerpt-service';
-import { CSS_CLASSES, TIMEOUTS } from './constants';
+import { MtimeCache } from './mtime-cache';
+import { CSS_CLASSES, TIMEOUTS, RENDER_BATCH_SIZE } from './constants';
 
 export const RELATED_NOTES_BY_TAG_VIEW_TYPE = 'related-notes-by-tag-view';
+
+/** Renders part of the list, returning how many notes it placed. */
+type RenderChunk = () => number;
 
 export class RelatedNotesView extends ItemView {
   plugin: RelatedNotesPlugin;
@@ -22,10 +26,17 @@ export class RelatedNotesView extends ItemView {
   private searchQuery: string = '';
   private searchMatchMode: 'any' | 'all' = 'any';
   private lastActiveFilePath: string | null = null;
+  private renderedTagSignature: string | null = null;
   private currentRelatedNotesMap: Map<string, FileWithMatchedTags[]> | null = null;
   private currentExcerpts: Map<string, string> = new Map();
+  private contentCache = new MtimeCache<string>();
   private listContainerEl: HTMLElement | null = null;
   private searchGeneration = 0;
+  private pendingChunks: RenderChunk[] = [];
+  private deferredGroupItems: Map<string, RenderChunk[]> = new Map();
+  /** Set by expand or collapse all, until a group is toggled on its own. */
+  private bulkGroupState: boolean | null = null;
+  private renderObserver: IntersectionObserver | null = null;
   private debouncedFilteredListUpdate = debounce(
     () => void this.renderFilteredList(),
     TIMEOUTS.SEARCH_DEBOUNCE_DELAY,
@@ -92,6 +103,8 @@ export class RelatedNotesView extends ItemView {
 
   async onClose() {
     this.clearSearchDebounce();
+    this.resetProgressiveRender();
+    this.contentCache.clear();
     this.previewManager.cleanup();
     this.uiRenderer.cleanup();
     this.container.empty();
@@ -99,6 +112,24 @@ export class RelatedNotesView extends ItemView {
 
   clearExcerptCache(): void {
     this.excerptService.clearCache();
+  }
+
+  /**
+   * Forgets which groups the user has opened or closed, so that a change to
+   * the default group state is not overridden by choices made before it.
+   */
+  resetGroupStates(): void {
+    this.tagGroupStates.clear();
+    this.bulkGroupState = null;
+  }
+
+  /**
+   * Whether the file's tags differ from those the panel was last built from.
+   * Editing a note's prose leaves this false, which is nearly everything
+   * typing produces, so the panel can ignore those edits entirely.
+   */
+  hasTagsChanged(file: TFile): boolean {
+    return this.tagAnalyzer.getTagSignature(file) !== this.renderedTagSignature;
   }
 
   private applyTitleStyleOverrides(): void {
@@ -129,45 +160,24 @@ export class RelatedNotesView extends ItemView {
     });
   }
 
-  private restoreState(): void {
-    const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
-    
-    tagGroups.forEach((group: HTMLElement) => {
-      const headerEl = group.querySelector(`.${CSS_CLASSES.TAG_GROUP_HEADER}`);
-      if (headerEl?.textContent) {
-        const tagName = headerEl.textContent.replace('Notes with tag: ', '');
-        const savedState = this.tagGroupStates.get(tagName);
-        
-        if (savedState !== undefined) {
-          group.toggleClass('collapsed', savedState);
-        }
-      }
-    });
-  }
-
+  /**
+   * Rebuilds the list with every group set the same way, rather than toggling
+   * the groups already on screen. Collapsing a group whose notes were already
+   * queued would otherwise build them into something hidden, where they add no
+   * height and so pull in the entire list at once. Rebuilding also settles
+   * groups not yet built, which have no state of their own to toggle.
+   */
   private handleExpandCollapseToggle(isExpandMode: boolean): void {
-    // Apply the current action to all tag groups
-    const tagGroups = this.container.querySelectorAll(`.${CSS_CLASSES.TAG_GROUP}`);
-    
-    tagGroups.forEach((group: HTMLElement) => {
-      const shouldExpand = isExpandMode;
-      group.toggleClass('collapsed', !shouldExpand);
-      
-      // Remove from preserved state if present
-      const headerEl = group.querySelector(`.${CSS_CLASSES.TAG_GROUP_HEADER}`);
-      if (headerEl?.textContent) {
-        const tagName = headerEl.textContent.replace('Notes with tag: ', '');
-        if (this.tagGroupStates.has(tagName)) {
-          this.tagGroupStates.delete(tagName);
-        }
-      }
-    });
-    
+    this.bulkGroupState = !isExpandMode;
+    this.tagGroupStates.clear();
+
     // Update button state to opposite mode after performing the action
     this.isExpandAllMode = !isExpandMode;
     if (this.expandCollapseButton) {
       this.uiRenderer.updateExpandCollapseIcon(this.expandCollapseButton, this.isExpandAllMode);
     }
+
+    void this.renderFilteredList(false);
   }
 
   async updateView() {
@@ -194,7 +204,12 @@ export class RelatedNotesView extends ItemView {
       this.searchQuery = '';
       this.searchMatchMode = 'any';
       this.lastActiveFilePath = activeFile.path;
+      // The search it serves is cleared too, so holding the previous note's
+      // contents would only keep the whole vault in memory for nothing
+      this.contentCache.clear();
     }
+
+    this.renderedTagSignature = this.tagAnalyzer.getTagSignature(activeFile);
 
     const analysisResult = this.tagAnalyzer.analyzeRelatedNotes(activeFile, this.plugin.settings);
 
@@ -264,16 +279,23 @@ export class RelatedNotesView extends ItemView {
     this.debouncedFilteredListUpdate.cancel();
   }
 
-  private async renderFilteredList(): Promise<void> {
+  /**
+   * @param preserveGroupState keep the collapse state of the groups on screen.
+   * Set false when the caller has just decided that state for every group.
+   */
+  private async renderFilteredList(preserveGroupState = true): Promise<void> {
     if (!this.listContainerEl || !this.currentRelatedNotesMap) return;
 
     const generation = ++this.searchGeneration;
 
-    this.captureCurrentState();
+    if (preserveGroupState) {
+      this.captureCurrentState();
+    }
 
     const filteredMap = await this.filterRelatedNotesMap(this.currentRelatedNotesMap, this.searchQuery);
     if (generation !== this.searchGeneration) return;
 
+    this.resetProgressiveRender();
     this.listContainerEl.empty();
 
     if (filteredMap.size === 0) {
@@ -281,20 +303,63 @@ export class RelatedNotesView extends ItemView {
       return;
     }
 
-    if (this.plugin.settings.listViewMode === 'title') {
-      this.renderTitleList(filteredMap, this.currentExcerpts, this.listContainerEl);
-      return;
+    this.pendingChunks = this.plugin.settings.listViewMode === 'title'
+      ? this.buildTitleListChunks(filteredMap, this.currentExcerpts, this.listContainerEl)
+      : this.buildTagGroupChunks(filteredMap, this.currentExcerpts, this.listContainerEl);
+
+    this.renderNextChunks();
+  }
+
+  /**
+   * Renders batches until the budget is spent, then watches for the end of the
+   * list coming into view. Nothing is omitted - the rest is built on scroll,
+   * so the initial cost no longer scales with the size of the result set.
+   */
+  private renderNextChunks(): void {
+    if (!this.listContainerEl) return;
+
+    this.teardownRenderObserver();
+    this.listContainerEl.querySelector(`.${CSS_CLASSES.RENDER_SENTINEL}`)?.remove();
+
+    let rendered = 0;
+    while (this.pendingChunks.length > 0 && rendered < RENDER_BATCH_SIZE) {
+      rendered += this.pendingChunks.shift()?.() ?? 0;
     }
 
-    this.renderTagGroups(filteredMap, this.currentExcerpts, this.listContainerEl);
-    this.restoreState();
+    this.observeRenderSentinel();
+  }
+
+  private observeRenderSentinel(): void {
+    if (!this.listContainerEl || this.pendingChunks.length === 0) return;
+
+    const sentinel = this.listContainerEl.createDiv(CSS_CLASSES.RENDER_SENTINEL);
+
+    this.renderObserver = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        this.renderNextChunks();
+      }
+      // Start filling the next batch slightly before the list runs out
+    }, { rootMargin: '200px' });
+
+    this.renderObserver.observe(sentinel);
+  }
+
+  private teardownRenderObserver(): void {
+    this.renderObserver?.disconnect();
+    this.renderObserver = null;
+  }
+
+  private resetProgressiveRender(): void {
+    this.teardownRenderObserver();
+    this.pendingChunks = [];
+    this.deferredGroupItems.clear();
   }
 
   /**
    * Flat list of every matching note, ungrouped. A note matching several tags
    * appears once, with the count of tags it matched.
    */
-  private renderTitleList(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>, targetContainer: HTMLElement): void {
+  private buildTitleListChunks(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>, targetContainer: HTMLElement): RenderChunk[] {
     const uniqueNotes = new Map<string, FileWithMatchedTags>();
     relatedNotesMap.forEach(files => {
       files.forEach(fileWithTags => uniqueNotes.set(fileWithTags.file.path, fileWithTags));
@@ -303,7 +368,21 @@ export class RelatedNotesView extends ItemView {
     const sortedFiles = this.tagAnalyzer.sortFiles([...uniqueNotes.values()], this.plugin.settings.defaultSortMode);
 
     const listEl = targetContainer.createEl('ul', { cls: CSS_CLASSES.NOTES_LIST });
-    this.renderFileList(listEl, sortedFiles, excerpts, true);
+    return this.buildFileListChunks(listEl, sortedFiles, excerpts, true);
+  }
+
+  private buildFileListChunks(listEl: HTMLElement, files: FileWithMatchedTags[], excerpts: Map<string, string>, showTagMatchCount: boolean): RenderChunk[] {
+    const chunks: RenderChunk[] = [];
+
+    for (let start = 0; start < files.length; start += RENDER_BATCH_SIZE) {
+      const batch = files.slice(start, start + RENDER_BATCH_SIZE);
+      chunks.push(() => {
+        this.renderFileList(listEl, batch, excerpts, showTagMatchCount);
+        return batch.length;
+      });
+    }
+
+    return chunks;
   }
 
   private collectUniqueFiles(relatedNotesMap: Map<string, FileWithMatchedTags[]>): TFile[] {
@@ -314,12 +393,15 @@ export class RelatedNotesView extends ItemView {
     return [...uniqueFiles.values()];
   }
 
+  /**
+   * Lowercased note bodies for content matching. Cached because the search
+   * re-filters the whole result set on every keystroke, and lowercasing an
+   * entire vault repeatedly is what made searching in show all notes slow.
+   */
   private async readFileContents(files: TFile[]): Promise<Map<string, string>> {
-    const entries = await Promise.all(files.map(async (file): Promise<[string, string]> => {
-      const content = await this.app.vault.cachedRead(file);
-      return [file.path, content.toLowerCase()];
-    }));
-    return new Map(entries);
+    return this.contentCache.getMany(files, async file =>
+      (await this.app.vault.cachedRead(file)).toLowerCase()
+    );
   }
 
   /**
@@ -388,12 +470,12 @@ export class RelatedNotesView extends ItemView {
       return new Map<string, string>();
     }
 
-    const allFiles: TFile[] = [];
-    relatedNotesMap.forEach(files => {
-      files.forEach(f => allFiles.push(f.file));
-    });
-
-    return this.excerptService.getExcerptsForFiles(allFiles, this.plugin.settings);
+    // Deduplicate first: a note appears once per tag it matched, and in show
+    // all notes mode that multiplies the whole vault several times over
+    return this.excerptService.getExcerptsForFiles(
+      this.collectUniqueFiles(relatedNotesMap),
+      this.plugin.settings
+    );
   }
 
   private renderHeader(): HTMLElement {
@@ -486,7 +568,7 @@ export class RelatedNotesView extends ItemView {
       .filter(([, files]) => files.length > 0);
   }
 
-  private renderTagGroups(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>, targetContainer: HTMLElement): void {
+  private buildTagGroupChunks(relatedNotesMap: Map<string, FileWithMatchedTags[]>, excerpts: Map<string, string>, targetContainer: HTMLElement): RenderChunk[] {
     // Convert Map to array and sort tag groups per the tag sort setting
     const sortedTagEntries = Array.from(relatedNotesMap.entries())
       .sort(([tagA, filesA], [tagB, filesB]) => {
@@ -500,36 +582,71 @@ export class RelatedNotesView extends ItemView {
       ? sortedTagEntries
       : this.claimNotesByHomeTag(sortedTagEntries);
 
-    displayedTagEntries.forEach(([tag, files]) => {
-      const savedState = this.tagGroupStates.get(tag);
-      const shouldBeCollapsed = savedState !== undefined 
-        ? savedState 
-        : this.plugin.settings.defaultGroupState === 'collapsed';
-      
-      const tagGroupEl = targetContainer.createDiv({
-        cls: `${CSS_CLASSES.TAG_GROUP} ${shouldBeCollapsed ? 'collapsed' : 'expanded'}`
-      });
+    // One chunk per group header. Each queues its own notes as it is built, so
+    // a run of groups costs no more than a run of notes
+    return displayedTagEntries.map(([tag, files]) => () => {
+      const { listEl, isCollapsed } = this.createTagGroup(tag, files, targetContainer);
 
       const sortedFiles = this.tagAnalyzer.sortFiles(files, this.plugin.settings.defaultSortMode);
+      const itemChunks = this.buildFileListChunks(
+        listEl,
+        sortedFiles,
+        excerpts,
+        !this.plugin.settings.showNotesInAllTagGroups
+      );
 
-      const headerEl = tagGroupEl.createDiv({
-        text: `Notes with tag: ${tag} ` + ' (' + sortedFiles.length + ')',
-        cls: CSS_CLASSES.TAG_GROUP_HEADER,
-        attr: {
-          tabindex: '0',
-          role: 'button',
-          'aria-expanded': shouldBeCollapsed ? 'false' : 'true'
-        }
-      });
-      
-      const listEl = tagGroupEl.createEl('ul', { cls: CSS_CLASSES.NOTES_LIST });
+      if (isCollapsed) {
+        // Hidden notes occupy no space, so rendering them would leave the end
+        // of the list still on screen and pull in the whole vault at once
+        this.deferredGroupItems.set(tag, itemChunks);
+      } else {
+        this.pendingChunks.unshift(...itemChunks);
+      }
 
-      this.setupTagGroupToggle(tagGroupEl, headerEl, tag);
-
-      this.renderFileList(listEl, sortedFiles, excerpts, !this.plugin.settings.showNotesInAllTagGroups);
-      
-      tagGroupEl.createEl('hr', { cls: CSS_CLASSES.SEPARATOR });
+      return 1;
     });
+  }
+
+  private createTagGroup(tag: string, files: FileWithMatchedTags[], targetContainer: HTMLElement): { listEl: HTMLElement; isCollapsed: boolean } {
+    // A group's own state wins, then any expand or collapse all still in
+    // force, then the setting - so groups built later match those already shown
+    const isCollapsed = this.tagGroupStates.get(tag)
+      ?? this.bulkGroupState
+      ?? this.plugin.settings.defaultGroupState === 'collapsed';
+
+    const tagGroupEl = targetContainer.createDiv({
+      cls: `${CSS_CLASSES.TAG_GROUP} ${isCollapsed ? 'collapsed' : 'expanded'}`
+    });
+
+    const headerEl = tagGroupEl.createDiv({
+      text: `Notes with tag: ${tag} ` + ' (' + files.length + ')',
+      cls: CSS_CLASSES.TAG_GROUP_HEADER,
+      attr: {
+        tabindex: '0',
+        role: 'button',
+        'aria-expanded': isCollapsed ? 'false' : 'true'
+      }
+    });
+
+    const listEl = tagGroupEl.createEl('ul', { cls: CSS_CLASSES.NOTES_LIST });
+
+    this.setupTagGroupToggle(tagGroupEl, headerEl, tag);
+
+    tagGroupEl.createEl('hr', { cls: CSS_CLASSES.SEPARATOR });
+
+    return { listEl, isCollapsed };
+  }
+
+  /**
+   * Builds the notes of a group whose rendering was held back while collapsed.
+   */
+  private renderDeferredGroup(tag: string): void {
+    const deferred = this.deferredGroupItems.get(tag);
+    if (!deferred) return;
+
+    this.deferredGroupItems.delete(tag);
+    this.pendingChunks.unshift(...deferred);
+    this.renderNextChunks();
   }
 
   private setupTagGroupToggle(tagGroupEl: HTMLElement, headerEl: HTMLElement, tag: string): void {
@@ -538,6 +655,10 @@ export class RelatedNotesView extends ItemView {
       tagGroupEl.toggleClass('collapsed', willBeCollapsed);
       headerEl.setAttribute('aria-expanded', (!willBeCollapsed).toString());
       this.tagGroupStates.set(tag, willBeCollapsed);
+
+      if (!willBeCollapsed) {
+        this.renderDeferredGroup(tag);
+      }
     };
 
     headerEl.addEventListener('click', toggleGroup);

@@ -100,6 +100,8 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.defaultGroupState)
         .onChange(async (value: 'collapsed'|'expanded') => {
           this.plugin.settings.defaultGroupState = value;
+          // Groups opened or closed in the panel would otherwise win over this
+          this.plugin.resetGroupStates();
           await this.plugin.saveSettings();
         }));
 

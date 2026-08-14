@@ -1,13 +1,9 @@
 import { App, TFile } from 'obsidian';
 import { RelatedNotesSettings } from './settings';
-
-interface CacheEntry {
-  mtime: number;
-  excerpt: string;
-}
+import { MtimeCache } from './mtime-cache';
 
 export class ExcerptService {
-  private cache: Map<string, CacheEntry> = new Map();
+  private cache = new MtimeCache<string>();
 
   constructor(private app: App) {}
 
@@ -16,28 +12,7 @@ export class ExcerptService {
   }
 
   async getExcerptsForFiles(files: TFile[], settings: RelatedNotesSettings): Promise<Map<string, string>> {
-    const uniqueFiles = new Map<string, TFile>();
-    files.forEach(file => uniqueFiles.set(file.path, file));
-
-    const result = new Map<string, string>();
-    const misses: TFile[] = [];
-
-    uniqueFiles.forEach(file => {
-      const cached = this.cache.get(file.path);
-      if (cached && cached.mtime === file.stat.mtime) {
-        result.set(file.path, cached.excerpt);
-      } else {
-        misses.push(file);
-      }
-    });
-
-    await Promise.all(misses.map(async file => {
-      const excerpt = await this.buildExcerpt(file, settings);
-      this.cache.set(file.path, { mtime: file.stat.mtime, excerpt });
-      result.set(file.path, excerpt);
-    }));
-
-    return result;
+    return this.cache.getMany(files, file => this.buildExcerpt(file, settings));
   }
 
   private async buildExcerpt(file: TFile, settings: RelatedNotesSettings): Promise<string> {

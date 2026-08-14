@@ -232,6 +232,11 @@
   margin-bottom: 0.25rem;
 }
 
+/* Marks the end of what has been rendered, so scrolling to it builds more */
+.related-notes-render-sentinel {
+  height: 1px;
+}
+
 /* Matched tags styles */
 .matched-tags {
   margin-top: 4px;
