@@ -84,14 +84,15 @@ Access plugin settings through Obsidian Settings > Plugin Options > Related Note
 * Minimum verified on Obsidian v1.9.x
 * Notes with tags (hashtags or YAML frontmatter)
 
-> **Note**: Version 0.7.0 is the last release supporting Obsidian below v1.13.0. Later releases require Obsidian v1.13.0 or newer, so the plugin can adopt Obsidian's current settings API. If you stay on an older Obsidian, you will keep being offered 0.7.0 and the plugin will continue to work.
+> **Note**: Version 0.7.1 is the last release supporting Obsidian below v1.13.0. Later releases require Obsidian v1.13.0 or newer, so the plugin can adopt Obsidian's current settings API. If you stay on an older Obsidian, you will keep being offered 0.7.1 and the plugin will continue to work.
 
 ## Support
 
 Found a bug or have a feature request? Please open an issue on [GitHub](https://github.com/chrishoward-projects/related-notes-by-tag).
 
-## Also by me
+## My Obsidian Plugins
 
+* [Related Notes by Tag](https://community.obsidian.md/plugins/related-notes-by-tag)
 * [Source Mode Styling](https://community.obsidian.md/plugins/sourcemode-styling)
 
 ***
