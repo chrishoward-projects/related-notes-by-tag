@@ -47,7 +47,13 @@
   cursor: pointer;
 }
 
-.related-notes-narrow-number-input {
+/* Excerpt length and title font size hold three digits at most, so the default
+   full-width input is far wider than anything it can contain. The first
+   selector covers the input built by hand in a render row; the second covers
+   the declarative control, which exposes no class of its own and so is reached
+   through the class on its group. */
+.related-notes-narrow-number-input,
+.related-notes-number-settings input[type="number"] {
   width: 4em;
 }
 
@@ -183,17 +189,6 @@
   display: block;
 }
 
-.related-notes-instructions {
-  background-color: var(--background-secondary);
-  padding: 15px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-m);
-}
-
-.related-notes-instructions p {
-  font-weight:bold;
-}
-
 /* Preview Popup Styles */
 .related-notes-preview {
   position: fixed; /* Use fixed to position relative to viewport */
@@ -266,57 +261,6 @@
 .related-notes-tags-toggle-controls.is-active {
   background-color: var(--background-modifier-hover);
   color: var(--text-accent);
-}
-
-/* Folder Exclusion Styles */
-
-.folder-exclusion-setting-control {
-  position: relative;
-}
-
-/* Folder Suggestions Dropdown */
-.folder-suggestions-container {
-  position: absolute;
-  background-color: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  z-index: 1000;
-  box-shadow: 0 2px 8px var(--background-modifier-box-shadow);
-  right: 0;
-  max-height: 200px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.folder-suggestion-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: background-color 0.1s ease;
-  text-align: left;
-}
-
-.folder-suggestion-item:hover {
-  background-color: var(--background-modifier-hover);
-}
-
-/* Delete Button Styling */
-/* Scoped to the settings-tab container so this outranks Obsidian's own button
-   rules on specificity rather than with !important */
-.folder-exclusion-container .folder-exclusion-delete-btn {
-  background-color: transparent;
-  border: none;
-  box-shadow: none;
-  color: var(--text-error);
-  cursor: pointer;
-  padding: 4px;
-}
-
-/* Neutral hover wash rather than --background-modifier-error-hover: that
-   variable is translucent in several themes, so a red icon over it reads as
-   red-on-red. --text-error is legible on the normal background by definition,
-   so pairing it with the standard hover keeps contrast in every theme. */
-.folder-exclusion-container .folder-exclusion-delete-btn:hover {
-  background-color: var(--background-modifier-hover);
 }
 
 /* Expand/Collapse All Button */

@@ -39,7 +39,6 @@ export const CSS_CLASSES = {
   SEPARATOR: 'related-notes-separator',
   PREVIEW: 'related-notes-preview',
   PREVIEW_LOADED: 'is-loaded',
-  INSTRUCTIONS: 'related-notes-instructions',
   EXCERPT: 'related-notes-excerpt',
   TAG_MATCH_COUNT: 'related-notes-tag-match-count',
   SEARCH_CONTAINER: 'related-notes-search-container',

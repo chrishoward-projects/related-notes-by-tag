@@ -1,6 +1,6 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting, SettingDefinitionItem, SettingDefinitionList } from 'obsidian';
 import RelatedNotesPlugin from './main';
-import { FolderSuggestions } from './folder-suggestions';
+import { FolderSuggest } from './folder-suggestions';
 
 export interface FolderExclusion {
   path: string;           // Absolute path from vault root
@@ -52,309 +52,271 @@ export const DEFAULT_SETTINGS: RelatedNotesSettings = {
   upgradeNoticeShown: false,
 };
 
+const SUBFOLDER_DESC = {
+  included: 'Selected folder plus subfolders',
+  excluded: 'Selected folder only',
+};
+
 export class RelatedNotesSettingTab extends PluginSettingTab {
   plugin: RelatedNotesPlugin;
-  private folderSuggestions: FolderSuggestions;
 
   constructor(app: App, plugin: RelatedNotesPlugin) {
     super(app, plugin);
     this.plugin = plugin;
-    this.folderSuggestions = new FolderSuggestions(app);
   }
 
-  display(): void {
-    const { containerEl } = this;
-
-    containerEl.empty();
-
-    new Setting(containerEl)
-      .setName('Default sort mode')
-      .setDesc('Default sort method for related notes')
-      .addDropdown(dropdown => dropdown
-        .addOption('name', 'Name')
-        .addOption('date', 'Date edited')
-        .addOption('created', 'Date created')
-        .setValue(this.plugin.settings.defaultSortMode)
-        .onChange(async (value: 'name' | 'date' | 'created') => {
-          this.plugin.settings.defaultSortMode = value;
-          await this.plugin.saveSettings();
-        }));
-
-    new Setting(containerEl)
-      .setName('Excluded tags')
-      .setDesc('Comma-separated list of tags to exclude from related notes (# prefix optional)')
-      .addText(text => text
-        .setPlaceholder('For example: ignore, draft, #private')
-        .setValue(this.plugin.settings.excludedTags)
-        .onChange(async (value) => {
-          this.plugin.settings.excludedTags = value;
-          await this.plugin.saveSettings();
-        }));
-
-    new Setting(containerEl)
-      .setName('Default group state')
-      .setDesc('Initial expansion state of tag groups')
-      .addDropdown(dropdown => dropdown
-        .addOption('collapsed', 'Collapsed')
-        .addOption('expanded', 'Expanded')
-        .setValue(this.plugin.settings.defaultGroupState)
-        .onChange(async (value: 'collapsed'|'expanded') => {
-          this.plugin.settings.defaultGroupState = value;
-          // Groups opened or closed in the panel would otherwise win over this
-          this.plugin.resetGroupStates();
-          await this.plugin.saveSettings();
-        }));
-
-    new Setting(containerEl)
-      .setName('Show notes in all matching tag groups')
-      .setDesc('When off, each note is listed once only, under the first of its tags alphabetically, with the number of tags it matched shown beside it. Use the show matched tags button in the panel to see which tags a note has.')
-      .addToggle(toggle => toggle
-        .setValue(this.plugin.settings.showNotesInAllTagGroups)
-        .onChange(async (value) => {
-          this.plugin.settings.showNotesInAllTagGroups = value;
-          await this.plugin.saveSettings();
-        }));
-
-    // Titles and excerpts section
-    new Setting(containerEl)
-      .setName('Titles and excerpts')
-      .setDesc('Show an excerpt of a note\'s content alongside or instead of its title. Zettelkasten and atomic-note vaults benefit most, where titles are generic dates or identifiers - though it\'s a handy preview even when titles are already descriptive.')
-      .setHeading();
-
-    new Setting(containerEl)
-      .setName('Note display')
-      .setDesc('Show the note title, an excerpt of its content, or both')
-      .addDropdown(dropdown => dropdown
-        .addOption('title', 'Title')
-        .addOption('title-excerpt', 'Title + excerpt')
-        .addOption('excerpt', 'Excerpt')
-        .setValue(this.plugin.settings.noteDisplayMode)
-        .onChange(async (value: NoteDisplayMode) => {
-          this.plugin.settings.noteDisplayMode = value;
-          await this.plugin.saveSettings();
-        }));
-
-    new Setting(containerEl)
-      .setName('Excerpt length')
-      .setDesc('How much of the note to show as an excerpt')
-      .addText(text => {
-        text.inputEl.type = 'number';
-        text.inputEl.min = '1';
-        text.inputEl.addClass('related-notes-narrow-number-input');
-        text
-          .setValue(String(this.plugin.settings.excerptLength))
-          .onChange(async (value) => {
-            const parsed = parseInt(value, 10);
-            this.plugin.settings.excerptLength = Number.isFinite(parsed) && parsed > 0
-              ? parsed
-              : DEFAULT_SETTINGS.excerptLength;
-            await this.plugin.saveSettings();
-          });
-        return text;
-      })
-      .addDropdown(dropdown => dropdown
-        .addOption('sentences', 'Sentences')
-        .addOption('words', 'Words')
-        .addOption('characters', 'Characters')
-        .setValue(this.plugin.settings.excerptUnit)
-        .onChange(async (value: ExcerptUnit) => {
-          this.plugin.settings.excerptUnit = value;
-          await this.plugin.saveSettings();
-        }));
-
-    new Setting(containerEl)
-      .setName('Include heading in excerpt')
-      .setDesc('If a note starts with a heading, include it as part of the excerpt')
-      .addToggle(toggle => toggle
-        .setValue(this.plugin.settings.excerptIncludeHeading)
-        .onChange(async (value) => {
-          this.plugin.settings.excerptIncludeHeading = value;
-          await this.plugin.saveSettings();
-        }));
-
-    new Setting(containerEl)
-      .setName('Title colour')
-      .setDesc('Colour of the note title/excerpt link. Defaults to your theme\'s normal text colour.')
-      .addColorPicker(picker => picker
-        .setValue(this.plugin.settings.titleColor || this.resolveComputedColor('--text-normal'))
-        .onChange(async (value) => {
-          this.plugin.settings.titleColor = value;
-          await this.plugin.saveSettings();
-        }))
-      .addExtraButton(button => button
-        .setIcon('rotate-ccw')
-        .setTooltip('Reset to default')
-        .onClick(async () => {
-          this.plugin.settings.titleColor = '';
-          await this.plugin.saveSettings();
-          this.display();
-        }));
-
-    new Setting(containerEl)
-      .setName('Title font size')
-      .setDesc('Font size in pixels for the note title/excerpt link.')
-      .addText(text => {
-        text.inputEl.type = 'number';
-        text.inputEl.min = '1';
-        text.inputEl.addClass('related-notes-narrow-number-input');
-        text
-          .setValue(String(this.plugin.settings.titleFontSize || this.resolveComputedFontSizePx('--font-ui-smaller')))
-          .onChange(async (value) => {
-            const parsed = parseInt(value, 10);
-            this.plugin.settings.titleFontSize = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-            await this.plugin.saveSettings();
-          });
-        return text;
-      })
-      .addExtraButton(button => button
-        .setIcon('rotate-ccw')
-        .setTooltip('Reset to default')
-        .onClick(async () => {
-          this.plugin.settings.titleFontSize = 0;
-          await this.plugin.saveSettings();
-          this.display();
-        }));
-
-    new Setting(containerEl)
-      .setName('Title font weight')
-      .setDesc('Font weight for the note title/excerpt link')
-      .addDropdown(dropdown => dropdown
-        .addOption('', 'Default')
-        .addOption('400', 'Normal')
-        .addOption('500', 'Medium')
-        .addOption('600', 'Semibold')
-        .addOption('700', 'Bold')
-        .setValue(this.plugin.settings.titleFontWeight)
-        .onChange(async (value) => {
-          this.plugin.settings.titleFontWeight = value;
-          await this.plugin.saveSettings();
-        }));
-
-    // Folder Exclusion Section
-    new Setting(containerEl)
-      .setName('Folder exclusion')
-      .setDesc('Exclude files from specific folders when finding related notes. Use absolute paths from vault root, such as /projects/archive.')
-      .setHeading();
-
-    // Container for folder exclusion list
-    const folderExclusionContainer = containerEl.createDiv('folder-exclusion-container');
-
-    // Render existing exclusions
-    this.renderFolderExclusions(folderExclusionContainer);
-
-    // Add new folder button
-    new Setting(containerEl)
-      .setName('Add another exclusion')
-      .setDesc('Add a new folder to exclude from related notes')
-      .addButton(button => button
-        .setIcon('folder-plus')
-        .setTooltip('Add another folder exclusion')
-        .setCta()
-        .onClick(() => {
-          this.addNewFolderExclusion(folderExclusionContainer);
-        }));
-
-    // Add static instructions
-    new Setting(containerEl)
-      .setName('Activation and usage')
-      .setHeading();
-
-    const instructionsDiv = containerEl.createDiv('related-notes-instructions');
-    instructionsDiv.createEl('p', { text: 'To activate the sidebar:' });
-    instructionsDiv.createEl('ul', {}, (list) => {
-      list.createEl('li', { text: 'On desktop, open from the right sidebar ribbon menu. If not visible, use the command palette (Ctrl/Cmd+P) and search for "Related Notes by Tag: Open sidebar"' });
-      list.createEl('li', { text: 'On mobile, swipe left from the right edge of the screen to reveal the right sidebar' });
-    });
-    instructionsDiv.createEl('p', { text: 'Usage:' });
-    instructionsDiv.createEl('ul', {}, (list) => {
-      list.createEl('li', { text: 'Use the toolbar buttons to switch between tag and title views, sort notes, sort tag groups, filter by tag matches, show matched tags and expand or collapse all groups' });
-      list.createEl('li', { text: 'Click tag group header to expand/collapse group' });
-      list.createEl('li', { text: 'Click note name to open in current tab' });
-      list.createEl('li', { text: 'Cmd/ctrl-click note name to open note in a new tab' });
-      list.createEl('li', { text: 'Cmd/ctrl-hover note name to preview it' });
-      list.createEl('li', { text: 'Search the listed notes by word or #tag; prefix a term with - to exclude' });
-      list.createEl('li', { text: 'Use the icon beside the search field to toggle matching any or all words/tags' });
-    });
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    return [
+      {
+        name: 'Default sort mode',
+        desc: 'Default sort method for related notes',
+        control: {
+          type: 'dropdown',
+          key: 'defaultSortMode',
+          options: { name: 'Name', date: 'Date edited', created: 'Date created' },
+        },
+      },
+      {
+        name: 'Excluded tags',
+        desc: 'Comma-separated list of tags to exclude from related notes (# prefix optional)',
+        control: {
+          type: 'text',
+          key: 'excludedTags',
+          placeholder: 'For example: ignore, draft, #private',
+        },
+      },
+      {
+        name: 'Default group state',
+        desc: 'Initial expansion state of tag groups',
+        control: {
+          type: 'dropdown',
+          key: 'defaultGroupState',
+          options: { collapsed: 'Collapsed', expanded: 'Expanded' },
+        },
+      },
+      {
+        name: 'Show notes in all matching tag groups',
+        desc: 'When off, each note is listed once only, under the first of its tags alphabetically, with the number of tags it matched shown beside it. Use the show matched tags button in the panel to see which tags a note has.',
+        control: { type: 'toggle', key: 'showNotesInAllTagGroups' },
+      },
+      {
+        type: 'group',
+        heading: 'Titles and excerpts',
+        // Individual definitions take no class of their own, so the group
+        // carries the hook the narrow number inputs are styled through
+        cls: 'related-notes-number-settings',
+        items: [
+          {
+            name: 'Note display',
+            desc: 'Show the note title, an excerpt of its content, or both. Zettelkasten and atomic-note vaults benefit most, where titles are generic dates or identifiers - though it is a handy preview even when titles are already descriptive.',
+            control: {
+              type: 'dropdown',
+              key: 'noteDisplayMode',
+              options: { 'title': 'Title', 'title-excerpt': 'Title + excerpt', 'excerpt': 'Excerpt' },
+            },
+          },
+          {
+            name: 'Excerpt length',
+            desc: 'How much of the note to show as an excerpt',
+            control: {
+              type: 'number',
+              key: 'excerptLength',
+              min: 1,
+              defaultValue: DEFAULT_SETTINGS.excerptLength,
+              validate: (value: number) =>
+                Number.isFinite(value) && value > 0 ? undefined : 'Enter a number above zero.',
+            },
+          },
+          {
+            name: 'Excerpt unit',
+            desc: 'The unit the excerpt length is counted in',
+            control: {
+              type: 'dropdown',
+              key: 'excerptUnit',
+              options: { sentences: 'Sentences', words: 'Words', characters: 'Characters' },
+            },
+          },
+          {
+            name: 'Include heading in excerpt',
+            desc: 'If a note starts with a heading, include it as part of the excerpt',
+            control: { type: 'toggle', key: 'excerptIncludeHeading' },
+          },
+          {
+            name: 'Title colour',
+            desc: 'Colour of the note title/excerpt link. Defaults to your theme\'s normal text colour.',
+            render: (setting: Setting) => {
+              setting
+                .addColorPicker(picker => picker
+                  .setValue(this.plugin.settings.titleColor || this.resolveComputedColor('--text-normal'))
+                  .onChange((value) => {
+                    this.plugin.settings.titleColor = value;
+                    void this.plugin.saveSettings();
+                  }))
+                .addExtraButton(button => button
+                  .setIcon('rotate-ccw')
+                  .setTooltip('Reset to default')
+                  .onClick(() => {
+                    this.plugin.settings.titleColor = '';
+                    void this.plugin.saveSettings();
+                    this.update();
+                  }));
+            },
+          },
+          {
+            name: 'Title font size',
+            desc: 'Font size in pixels for the note title/excerpt link.',
+            render: (setting: Setting) => {
+              setting
+                .addText(text => {
+                  text.inputEl.type = 'number';
+                  text.inputEl.min = '1';
+                  text.inputEl.addClass('related-notes-narrow-number-input');
+                  return text
+                    .setValue(String(this.plugin.settings.titleFontSize || this.resolveComputedFontSizePx('--font-ui-smaller')))
+                    .onChange((value) => {
+                      const parsed = parseInt(value, 10);
+                      this.plugin.settings.titleFontSize = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+                      void this.plugin.saveSettings();
+                    });
+                })
+                .addExtraButton(button => button
+                  .setIcon('rotate-ccw')
+                  .setTooltip('Reset to default')
+                  .onClick(() => {
+                    this.plugin.settings.titleFontSize = 0;
+                    void this.plugin.saveSettings();
+                    this.update();
+                  }));
+            },
+          },
+          {
+            name: 'Title font weight',
+            desc: 'Font weight for the note title/excerpt link',
+            control: {
+              type: 'dropdown',
+              key: 'titleFontWeight',
+              options: { '': 'Default', '400': 'Normal', '500': 'Medium', '600': 'Semibold', '700': 'Bold' },
+            },
+          },
+        ],
+      },
+      this.buildFolderExclusionList(),
+      {
+        type: 'group',
+        heading: 'Activation and usage',
+        items: [
+          {
+            name: 'Opening the panel',
+            desc: this.buildActivationInstructions(),
+          },
+          {
+            name: 'Using the panel',
+            desc: this.buildUsageInstructions(),
+          },
+        ],
+      },
+    ];
   }
 
-  private renderFolderExclusions(container: HTMLElement): void {
-    container.empty();
-    
-    if (this.plugin.settings.excludedFolders.length === 0) {
-      container.createEl('p', {
-        text: 'No folders excluded yet. Use the button below to add one.',
-        cls: 'setting-item-description'
-      });
-      return;
+  /**
+   * Reads and writes route through the plugin's own saveSettings() rather than
+   * the default auto-persist, because saving here also has to clear the excerpt
+   * cache and refresh the open panel.
+   */
+  getControlValue(key: string): unknown {
+    return this.plugin.settings[key as keyof RelatedNotesSettings];
+  }
+
+  async setControlValue(key: string, value: unknown): Promise<void> {
+    (this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
+    if (key === 'defaultGroupState') {
+      // Groups opened or closed in the panel would otherwise win over this
+      this.plugin.resetGroupStates();
     }
-    
-    this.plugin.settings.excludedFolders.forEach((exclusion, index) => {
-      const setting = new Setting(container);
-      
-      // Create description element that we can update dynamically
-      const updateDescription = () => {
-        const desc = exclusion.includeChildren ? ' (selected folder plus subfolders)' : ' (selected folder only)';
-        setting.descEl.empty();
-        setting.descEl.createSpan({ 
-          text: `${index + 1}: ${exclusion.path || '(empty)'}${desc}`,
-          cls: 'setting-item-description'
-        });
-      };
-      
-      setting
-        .addText(text => {
-          text
-            .setPlaceholder('/path/to/folder')
-            .setValue(exclusion.path)
-            .onChange(async (value) => {
-              this.plugin.settings.excludedFolders[index].path = value;
-              await this.plugin.saveSettings();
-              updateDescription(); // Update description when path changes
-            });
-          
-          // Add folder suggestions functionality
-          text.inputEl.addEventListener('input', () => {
-            void (async () => {
-              const results = await this.folderSuggestions.searchFolders(text.getValue());
-              this.folderSuggestions.displayFolderSuggestions(results);
-            })();
-          });
-          
-          return text;
-        })
-        .addToggle(toggle => toggle
-          .setTooltip('Include subfolders')
-          .setValue(exclusion.includeChildren)
-          .onChange(async (value) => {
-            this.plugin.settings.excludedFolders[index].includeChildren = value;
-            await this.plugin.saveSettings();
-            updateDescription(); // Update description when toggle changes
-          }))
-        .addButton(button => {
-          button
-            .setIcon('trash-2')
-            .setTooltip('Delete folder exclusion')
-            .onClick(async () => {
-              this.plugin.settings.excludedFolders.splice(index, 1);
-              await this.plugin.saveSettings();
-              this.renderFolderExclusions(container);
-            });
-          
-          // Apply CSS class for styling
-          button.buttonEl.addClass('folder-exclusion-delete-btn');
-          
-          return button;
-        });
-      
-      // Set initial description
-      updateDescription();
+    await this.plugin.saveSettings();
+  }
+
+  private buildFolderExclusionList(): SettingDefinitionList {
+    const exclusions = this.plugin.settings.excludedFolders;
+
+    return {
+      type: 'list',
+      heading: 'Folder exclusion',
+      emptyState: 'No folders excluded yet. Add one to leave its files out of related notes, using an absolute path from the vault root such as /projects/archive.',
+      addItem: {
+        name: 'Add folder exclusion',
+        action: () => {
+          exclusions.push({ path: '', includeChildren: true, id: Date.now().toString() });
+          void this.plugin.saveSettings();
+          this.update();
+        },
+      },
+      onDelete: (index: number) => {
+        exclusions.splice(index, 1);
+        void this.plugin.saveSettings();
+        this.update();
+      },
+      items: exclusions.map((exclusion, index) => ({
+        name: `Exclusion ${index + 1}`,
+        desc: exclusion.includeChildren ? SUBFOLDER_DESC.included : SUBFOLDER_DESC.excluded,
+        // A render row, because path plus subfolder toggle is two controls on
+        // one line, which a single declarative control cannot express.
+        render: (setting: Setting) => {
+          setting
+            .addText(text => {
+              text.setPlaceholder('/projects/archive').setValue(exclusion.path);
+              new FolderSuggest(this.app, text.inputEl, (path) => {
+                exclusion.path = path;
+                void this.plugin.saveSettings();
+              });
+              return text.onChange((value) => {
+                exclusion.path = value;
+                void this.plugin.saveSettings();
+              });
+            })
+            .addToggle(toggle => toggle
+              .setTooltip('Include subfolders')
+              .setValue(exclusion.includeChildren)
+              .onChange((value) => {
+                exclusion.includeChildren = value;
+                setting.setDesc(value ? SUBFOLDER_DESC.included : SUBFOLDER_DESC.excluded);
+                void this.plugin.saveSettings();
+              }));
+        },
+      })),
+    };
+  }
+
+  private buildActivationInstructions(): DocumentFragment {
+    return createFragment((frag) => {
+      frag.createEl('ul', {}, (list) => {
+        list.createEl('li', { text: 'On desktop, open from the right sidebar ribbon menu. If not visible, use the command palette (Ctrl/Cmd+P) and search for "Related Notes by Tag: Open sidebar"' });
+        list.createEl('li', { text: 'On mobile, swipe left from the right edge of the screen to reveal the right sidebar' });
+      });
     });
   }
 
+  private buildUsageInstructions(): DocumentFragment {
+    return createFragment((frag) => {
+      frag.createEl('ul', {}, (list) => {
+        list.createEl('li', { text: 'Use the toolbar buttons to switch between tag and title views, sort notes, sort tag groups, filter by tag matches, show matched tags and expand or collapse all groups' });
+        list.createEl('li', { text: 'Click tag group header to expand/collapse group' });
+        list.createEl('li', { text: 'Click note name to open in current tab' });
+        list.createEl('li', { text: 'Cmd/ctrl-click note name to open note in a new tab' });
+        list.createEl('li', { text: 'Cmd/ctrl-hover note name to preview it' });
+        list.createEl('li', { text: 'Search the listed notes by word or #tag; prefix a term with - to exclude' });
+        list.createEl('li', { text: 'Use the icon beside the search field to toggle matching any or all words/tags' });
+      });
+    });
+  }
+
+  /**
+   * Probes in the main workspace rather than the settings tab: since 1.13
+   * settings open in their own window, so a probe rooted here would measure
+   * that window rather than the one the panel actually renders in.
+   */
   private resolveComputedColor(cssVar: string): string {
-    const probe = this.containerEl.createSpan({ attr: { style: `color: var(${cssVar}); display: none;` } });
-    const rgb = activeWindow.getComputedStyle(probe).color;
-    probe.remove();
+    const rgb = this.probeComputedStyle(`color: var(${cssVar});`, style => style.color);
 
     const match = rgb.match(/\d+/g);
     if (!match || match.length < 3) return '#000000';
@@ -363,21 +325,16 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
   }
 
   private resolveComputedFontSizePx(cssVar: string): number {
-    const probe = this.containerEl.createSpan({ attr: { style: `font-size: var(${cssVar}); display: none;` } });
-    const fontSize = activeWindow.getComputedStyle(probe).fontSize;
-    probe.remove();
+    const fontSize = this.probeComputedStyle(`font-size: var(${cssVar});`, style => style.fontSize);
     return parseFloat(fontSize) || 13;
   }
 
-  private addNewFolderExclusion(container: HTMLElement): void {
-    const newExclusion: FolderExclusion = {
-      path: '',
-      includeChildren: true,
-      id: Date.now().toString()
-    };
-    
-    this.plugin.settings.excludedFolders.push(newExclusion);
-    void this.plugin.saveSettings();
-    this.renderFolderExclusions(container);
+  private probeComputedStyle(style: string, read: (computed: CSSStyleDeclaration) => string): string {
+    const host = this.app.workspace.containerEl;
+    const probe = host.createSpan({ attr: { style: `${style} display: none;` } });
+    const win = host.ownerDocument.defaultView ?? activeWindow;
+    const value = read(win.getComputedStyle(probe));
+    probe.remove();
+    return value;
   }
 }

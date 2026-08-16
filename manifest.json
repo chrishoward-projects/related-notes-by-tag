@@ -1,8 +1,8 @@
 {
 	"id": "related-notes-by-tag",
 	"name": "Related Notes by Tag",
-	"version": "0.7.1",
-	"minAppVersion": "1.9.14",
+	"version": "0.8.0",
+	"minAppVersion": "1.13.0",
 	"description": "Displays list of notes in the sidebar that share tags with the currently active note. Supports notes with generic titles, like Zettelkasten and atomic notes, with excerpts feature.",
 	"author": "Chris Howard",
 	"authorUrl": "https://github.com/chrishoward-projects",

@@ -8,10 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.0]
 
+### Added
+- Every setting is now found by Obsidian's own settings search, so typing "excerpt" or "exclude" in the settings search box goes straight to the relevant control rather than requiring you to find this plugin's tab first
+
 ### Changed
+- **Obsidian 1.13.0 or later is now required.** Earlier versions continue to be offered 0.7.1, which remains fully functional; the notice shown in 0.7.1 was the advance warning of this
+- The settings tab is now described to Obsidian rather than drawn by hand, which is what makes it searchable. Obsidian supplies the folder autocomplete, the add and delete controls for folder exclusions, and the number validation, all of which this plugin previously implemented itself
+- Excerpt length and its unit are now two separate settings rather than two controls sharing one row, so each can be found on its own by search
+- The activation and usage instructions are now standard setting descriptions rather than a bordered panel
 - The folder exclusion description now shows a lowercase example path, so it reads as a format to follow rather than a folder name to match
 
 ### Fixed
+- The default colour and font size shown for the note title were measured against whichever window had focus. Since Obsidian 1.13 opens settings in their own window, that could be the settings window rather than the one the panel appears in; they are now always measured where the panel actually renders
 - Saved settings were read without any type checking, so a mistyped setting name would have been accepted silently rather than caught while building
 
 ## [0.7.1]

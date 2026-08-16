@@ -1,99 +1,40 @@
-import { App } from 'obsidian';
+import { AbstractInputSuggest, App, TFolder } from 'obsidian';
 
-export class FolderSuggestions {
-  constructor(private app: App) {}
+/** Vault paths are stored absolute, with a leading slash. */
+function toStoredPath(folder: TFolder): string {
+  return folder.path === '/' ? '/' : `/${folder.path}`;
+}
 
-  /**
-   * Search for folders matching a query
-   */
-  public async searchFolders(query: string): Promise<string[]> {
-    if (!query) return [];
-    
-    const folders = this.app.vault.getAllFolders();
-    
-    let folderPaths = folders.map(folder => {
-      // Ensure leading slash for consistency with our path normalization
-      return folder.path === '/' ? '/' : (folder.path.startsWith('/') ? folder.path : '/' + folder.path);
-    });
-    
-    // Apply search query filter
-    folderPaths = folderPaths
-      .filter(path => path.toLowerCase().includes(query.toLowerCase()))
-      .sort();
-    
-    return folderPaths;
+/**
+ * Type-ahead over the vault's folders. Obsidian supplies the popover, its
+ * positioning and keyboard handling; all that is left is deciding what to
+ * offer and what picking one means.
+ */
+export class FolderSuggest extends AbstractInputSuggest<TFolder> {
+  constructor(
+    app: App,
+    private readonly inputEl: HTMLInputElement,
+    private readonly onPick: (path: string) => void
+  ) {
+    super(app, inputEl);
   }
 
-  /**
-   * Display folder suggestions dropdown
-   */
-  public displayFolderSuggestions(folders: string[]) {
-    // Clear previous suggestions
-    const existingSuggestions = activeDocument.querySelectorAll('.folder-suggestions-container');
-    existingSuggestions.forEach(el => el.remove());
+  protected getSuggestions(query: string): TFolder[] {
+    const needle = query.toLowerCase();
+    return this.app.vault.getAllFolders()
+      .filter(folder => toStoredPath(folder).toLowerCase().includes(needle))
+      .sort((a, b) => a.path.localeCompare(b.path));
+  }
 
-    if (folders.length === 0) return;
+  renderSuggestion(folder: TFolder, el: HTMLElement): void {
+    el.setText(toStoredPath(folder));
+  }
 
-    // Find the active input element that triggered this
-    const activeElement = activeDocument.activeElement;
-    if (!(activeElement instanceof HTMLInputElement)) {
-      return;
-    }
-
-    // Find the parent .setting-item-control element
-    const settingItemControl = activeElement.closest('.setting-item-control');
-    if (!settingItemControl) {
-      return;
-    }
-    
-    // Add class for positioning context (styles in styles.css)
-    (settingItemControl as HTMLElement).addClass('folder-exclusion-setting-control');
-
-    // Create a new suggestions container
-    const newContainer = createDiv({ cls: 'folder-suggestions-container' });
-
-    // Add suggestions to the container
-    folders.forEach(folder => {
-      const suggestionItem = newContainer.createDiv({ cls: 'folder-suggestion-item', text: folder });
-
-      // Click event
-      suggestionItem.addEventListener('click', () => {
-        // Set the value of the input field
-        activeElement.value = folder;
-
-        // Trigger an input event to ensure onChange handlers fire
-        const event = new Event('input', { bubbles: true });
-        activeElement.dispatchEvent(event);
-
-        // Remove the suggestions container
-        newContainer.remove();
-      });
-    });
-
-    // Position the suggestions container relative to the input element
-    const rect = activeElement.getBoundingClientRect();
-    
-    // Append to the setting-item-control for proper positioning
-    settingItemControl.appendChild(newContainer);
-    
-    // Position below the input field
-    newContainer.style.top = `${rect.height + 4}px`; // Position below input with small gap
-    newContainer.style.width = `${rect.width}px`;
-    
-    // Force a reflow to ensure styles are applied
-    void newContainer.offsetHeight;
-
-    // Add click outside listener
-    const clickOutsideHandler = (e: MouseEvent) => {
-      if (!newContainer.contains(e.target as Node) && e.target !== activeElement) {
-        newContainer.remove();
-        activeDocument.removeEventListener('click', clickOutsideHandler);
-      }
-    };
-    
-    // Delay adding the click listener to prevent immediate triggering
-    window.setTimeout(() => {
-      activeDocument.addEventListener('click', clickOutsideHandler);
-    }, 0);
+  selectSuggestion(folder: TFolder): void {
+    const path = toStoredPath(folder);
+    this.setValue(path);
+    this.inputEl.value = path;
+    this.onPick(path);
+    this.close();
   }
 }

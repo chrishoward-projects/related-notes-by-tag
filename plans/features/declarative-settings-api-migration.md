@@ -108,6 +108,34 @@ testing needed for: every control persisting and taking effect, both reset
 buttons, folder autocomplete, add/delete exclusions, and the settings-search
 entries appearing.
 
+## Outcome (shipped in 0.8.0)
+
+Done, with four deviations from the plan above.
+
+- **A toolchain upgrade had to come first.** `eslint-plugin-obsidianmd` was
+  pinned at 0.1.9, which predates both the four `settings-tab` rules and
+  `ui/sentence-case`, so none of the rules policing this migration could run.
+  Upgrading to 0.4.1 also required restructuring `eslint.config.mjs` (the
+  recommended config became a self-contained flat-config array), adding
+  `typescript` as a direct dependency, and pinning `@eslint/json` to 0.14.0.
+- **`type: 'list'` replaced more than planned.** The plan expected to keep
+  add/delete/empty-state hand-rolled and only swap the suggester. The list
+  definition supplies `addItem`, `onDelete` and `emptyState` itself, so
+  `renderFolderExclusions()` and `addNewFolderExclusion()` both went, along with
+  all five folder-related CSS blocks.
+- **Excerpt length needed a styling hook the API doesn't give.** Definitions
+  carry no `cls`, and groups cannot nest, so the narrow-number-input rule is
+  reached through `cls` on the "Titles and excerpts" group instead.
+- **The theme probes were measuring the wrong window.** `resolveComputedColor()`
+  and `resolveComputedFontSizePx()` used `activeWindow`, which since 1.13 is the
+  settings window rather than the one the panel renders in. Both now probe
+  `app.workspace.containerEl.ownerDocument`.
+
+Also worth recording: `prefer-setting-definitions` is not version-gated, so the
+`minAppVersion` bump was never what silenced it - implementing the definitions
+was. The bump was still required, because `no-unsupported-api` rejects
+`this.update()` below 1.13.0.
+
 ## Risk
 
 `excludedFolders` data shape is unchanged, so existing user settings carry over
