@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.8.0]
+
+### Changed
+- The folder exclusion description now shows a lowercase example path, so it reads as a format to follow rather than a folder name to match
+
+### Fixed
+- Saved settings were read without any type checking, so a mistyped setting name would have been accepted silently rather than caught while building
+
 ## [0.7.1]
 
 ### Changed

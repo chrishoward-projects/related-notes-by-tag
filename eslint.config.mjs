@@ -1,30 +1,27 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
-import tsparser from "@typescript-eslint/parser";
 import obsidianmd from "eslint-plugin-obsidianmd";
 
-/** @type {import('eslint').Linter.Config[]} */
+/**
+ * The obsidianmd recommended config is self-contained as of v0.4.0: it bundles
+ * typescript-eslint's type-checked rules, the import/sdl/depend/no-unsanitized
+ * plugins, and the Obsidian globals. Adding those separately would only risk
+ * drifting from what the community scanner actually runs.
+ *
+ * @type {import('eslint').Linter.Config[]}
+ */
 export default [
   {
     ignores: ["main.js", "**/*.mjs", "node_modules/**"]
   },
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...obsidianmd.configs.recommended,
   {
-    files: ["src/**/*.{ts,tsx}"],
+    // Type-checked rules need a program; the bundled config supplies the parser
+    // but leaves the project wiring to us.
+    files: ["src/**/*.ts"],
     languageOptions: {
-      globals: globals.browser,
-      parser: tsparser,
       parserOptions: {
-        project: "./tsconfig.json"
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname
       }
-    },
-    plugins: {
-      obsidianmd: obsidianmd
-    },
-    rules: {
-      ...obsidianmd.configs.recommended
     }
   }
 ];

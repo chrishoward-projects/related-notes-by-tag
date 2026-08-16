@@ -233,7 +233,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
     // Folder Exclusion Section
     new Setting(containerEl)
       .setName('Folder exclusion')
-      .setDesc('Exclude files from specific folders when finding related notes. Use absolute paths from vault root (e.g., /Personal/Journal).')
+      .setDesc('Exclude files from specific folders when finding related notes. Use absolute paths from vault root, such as /projects/archive.')
       .setHeading();
 
     // Container for folder exclusion list

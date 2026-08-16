@@ -218,7 +218,9 @@ export default class RelatedNotesPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    // loadData() is typed as any; narrowing it here keeps the spread type-safe
+    const savedData = await this.loadData() as Partial<RelatedNotesSettings> | null;
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData);
   }
 
   async saveSettings() {
