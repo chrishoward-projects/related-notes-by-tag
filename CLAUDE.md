@@ -50,6 +50,13 @@ When making changes, ensure compliance with Obsidian submission guidelines:
 - **Policies**: Ensure compliance with Obsidian Developer Policies https://docs.obsidian.md/Developer+policies
 - **Guidelines**: Ensure compliance with Obsidian Plugin Guidelines https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines
 
+### Branch Workflow
+
+- All development happens on `dev`. Never commit directly to `main`
+- When work is ready: switch to `main`, `git merge dev` (fast-forward where possible), push `main`, then switch back to `dev`
+- Keep `dev` pushed to `origin-projects` as well
+- Run `npm run release` from `main` only - the script pushes whichever branch is checked out
+
 ### Version Management
 
 See RELEASE.md for the full process. In short, after completing any task that adds features, fixes bugs, or makes changes:
