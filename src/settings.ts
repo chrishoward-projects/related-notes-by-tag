@@ -303,7 +303,7 @@ export class RelatedNotesSettingTab extends PluginSettingTab {
         list.createEl('li', { text: 'Click tag group header to expand/collapse group' });
         list.createEl('li', { text: 'Click note name to open in current tab' });
         list.createEl('li', { text: 'Cmd/ctrl-click note name to open note in a new tab' });
-        list.createEl('li', { text: 'Cmd/ctrl-hover note name to preview it (adjustable in page preview settings)' });
+        list.createEl('li', { text: 'Cmd/ctrl-hover note name to preview it (requires the page preview core plugin enabled)' });
         list.createEl('li', { text: 'Search the listed notes by word or #tag; prefix a term with - to exclude' });
         list.createEl('li', { text: 'Use the icon beside the search field to toggle matching any or all words/tags' });
       });

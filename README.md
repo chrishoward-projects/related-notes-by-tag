@@ -48,7 +48,7 @@ If you're a heavy tag user, this plugin makes tags even more useful.
 6. **Search**: Use the search field below the toolbar to narrow the listed notes. Type words to match note titles and content, or `#tag` terms to match tags, and prefix a term with `-` to exclude matching notes (`-draft`, `-#archive`); the icon beside the field chooses whether notes must match any or all of your terms
 7. **Quick Navigation**: Click any note title to open it immediately
 8. **Modifier Support**: Cmd/Ctrl+click to open notes in new tabs
-9. **Preview Support**: Hover with Cmd/Ctrl held to preview note content, using Obsidian's own page preview. The Cmd/Ctrl requirement can be turned off under Settings > Page preview
+9. **Preview Support**: Hover with Cmd/Ctrl held to preview note content, using Obsidian's own page preview. Requires the Page preview core plugin to be enabled (Settings > Core plugins), where the Cmd/Ctrl requirement can also be turned off
 
 ## USAGE TIP
 If you're finding a tag for a note has too many notes below it, try switching the filter to *2 matches* or *3 matches*. Also, try adding more tags to your current note
