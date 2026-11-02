@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The panel is now listed under Settings > Page preview, where the Cmd/Ctrl requirement for opening previews can be turned off so a plain hover is enough
 
 ### Fixed
-- On Windows, Ctrl-hovering a note made its preview flicker continuously ([#16](https://github.com/chrishoward-projects/related-notes-by-tag/issues/16)). Holding Ctrl repeats the key press many times a second, and each repeat closed and rebuilt the preview before it could finish loading. The plugin no longer watches the keyboard at all, since Obsidian's page preview now decides when to open a preview
+- Should fix the preview flicker some Windows users saw when Ctrl-hovering a note ([#16](https://github.com/chrishoward-projects/related-notes-by-tag/issues/16)). The likely cause was the plugin's own keyboard handling, which has been removed now that Obsidian's page preview decides when to open a preview
 
 ## [0.8.0]
 
