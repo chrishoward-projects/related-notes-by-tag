@@ -1,7 +1,6 @@
-import { ItemView, WorkspaceLeaf, TFile, debounce } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, debounce, HoverParent, HoverPopover } from 'obsidian';
 import RelatedNotesPlugin from './main';
 import { TagAnalyzer, FileWithMatchedTags } from './tag-analyzer';
-import { PreviewManager } from './preview-manager';
 import { UIRenderer } from './ui-renderer';
 import { ExcerptService } from './excerpt-service';
 import { MtimeCache } from './mtime-cache';
@@ -12,11 +11,12 @@ export const RELATED_NOTES_BY_TAG_VIEW_TYPE = 'related-notes-by-tag-view';
 /** Renders part of the list, returning how many notes it placed. */
 type RenderChunk = () => number;
 
-export class RelatedNotesView extends ItemView {
+export class RelatedNotesView extends ItemView implements HoverParent {
   plugin: RelatedNotesPlugin;
+  /** Owned by the core Page preview plugin, which sets it when a preview opens. */
+  hoverPopover: HoverPopover | null = null;
   private container: HTMLElement;
   private tagAnalyzer: TagAnalyzer;
-  private previewManager: PreviewManager;
   private uiRenderer: UIRenderer;
   private excerptService: ExcerptService;
   private tagGroupStates: Map<string, boolean> = new Map();
@@ -77,7 +77,6 @@ export class RelatedNotesView extends ItemView {
     super(leaf);
     this.plugin = plugin;
     this.tagAnalyzer = new TagAnalyzer(this.app);
-    this.previewManager = new PreviewManager(this.app);
     this.uiRenderer = new UIRenderer();
     this.excerptService = new ExcerptService(this.app);
   }
@@ -105,7 +104,6 @@ export class RelatedNotesView extends ItemView {
     this.clearSearchDebounce();
     this.resetProgressiveRender();
     this.contentCache.clear();
-    this.previewManager.cleanup();
     this.uiRenderer.cleanup();
     this.container.empty();
   }
@@ -719,29 +717,16 @@ export class RelatedNotesView extends ItemView {
   }
 
   private setupFileLinkEvents(linkEl: HTMLElement, file: TFile): void {
-    let hoverTimer: number;
-    
-    linkEl.addEventListener('mouseenter', (e: MouseEvent) => {
-      // Check immediately for modifier key
-      if (e.metaKey || e.ctrlKey) {
-        this.previewManager.showPreview(file, linkEl);
-      } else {
-        // Set up a timer to check for modifier key press while hovering
-        hoverTimer = window.setTimeout(() => {
-          if (linkEl.matches(':hover') && this.previewManager.getIsModifierHeld()) {
-            this.previewManager.showPreview(file, linkEl);
-          }
-        }, 100);
-      }
-    });
-    
-    linkEl.addEventListener('mouseleave', () => {
-      if (hoverTimer) {
-        window.clearTimeout(hoverTimer);
-      }
-      if (!this.previewManager.getIsModifierHeld()) {
-        this.previewManager.hidePreview();
-      }
+    // The core Page preview plugin decides whether Cmd/Ctrl is needed, and
+    // handles showing, positioning and closing the preview
+    linkEl.addEventListener('mouseover', (event: MouseEvent) => {
+      this.app.workspace.trigger('hover-link', {
+        event,
+        source: RELATED_NOTES_BY_TAG_VIEW_TYPE,
+        hoverParent: this,
+        targetEl: linkEl,
+        linktext: file.path
+      });
     });
 
     linkEl.addEventListener('click', (evt: MouseEvent) => {

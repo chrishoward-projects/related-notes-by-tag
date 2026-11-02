@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.8.1]
+
+### Changed
+- Note previews now use Obsidian's own page preview rather than a popup built by this plugin. Once open, a preview stays open while the mouse is over it, can be scrolled, and its links and other content work as they do in any other Obsidian preview. Cmd/Ctrl no longer needs to be held after the preview opens
+- The panel is now listed under Settings > Page preview, where the Cmd/Ctrl requirement for opening previews can be turned off so a plain hover is enough
+
+### Fixed
+- On Windows, Ctrl-hovering a note made its preview flicker continuously ([#16](https://github.com/chrishoward-projects/related-notes-by-tag/issues/16)). Holding Ctrl repeats the key press many times a second, and each repeat closed and rebuilt the preview before it could finish loading. The plugin no longer watches the keyboard at all, since Obsidian's page preview now decides when to open a preview
+
 ## [0.8.0]
 
 ### Added

@@ -37,8 +37,6 @@ export const CSS_CLASSES = {
   MATCHED_TAGS: 'matched-tags',
   MATCHED_TAG: 'matched-tag',
   SEPARATOR: 'related-notes-separator',
-  PREVIEW: 'related-notes-preview',
-  PREVIEW_LOADED: 'is-loaded',
   EXCERPT: 'related-notes-excerpt',
   TAG_MATCH_COUNT: 'related-notes-tag-match-count',
   SEARCH_CONTAINER: 'related-notes-search-container',
@@ -56,7 +54,6 @@ export const NEXT_RELEASE_MIN_APP_VERSION = '1.13.0';
 
 export const TIMEOUTS = {
   VIEW_UPDATE_DELAY: 50,
-  PREVIEW_RENDER_DELAY: 150,
   SEARCH_DEBOUNCE_DELAY: 200,
   /** How long a completed tag change settles before the panel rebuilds. */
   TAG_UPDATE_DELAY: 250,
@@ -72,12 +69,6 @@ export const TIMEOUTS = {
  * cost of showing a list no longer scales with how long that list is.
  */
 export const RENDER_BATCH_SIZE = 100;
-
-export const DIMENSIONS = {
-  PREVIEW_POPUP_WIDTH: 400,
-  PREVIEW_POPUP_MARGIN: 10,
-  PREVIEW_MAX_HEIGHT: '40vh'
-};
 
 export const SORT_MODES = {
   NAME: 'name' as const,

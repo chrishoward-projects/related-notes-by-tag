@@ -189,39 +189,6 @@
   display: block;
 }
 
-/* Preview Popup Styles */
-.related-notes-preview {
-  position: fixed; /* Use fixed to position relative to viewport */
-  z-index: 9999; /* Ensure it's on top */
-  background-color: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  padding: 10px;
-  box-shadow: var(--shadow-l);
-  opacity: 0;
-  transition: opacity 0.1s ease-in-out;
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
-  overflow-x: hidden;
-  overflow-y: auto;
-  width: 400px;
-  max-width: 400px;
-  max-height: 40vh;
-}
-
-.related-notes-preview.is-loaded {
-  opacity: 1;
-}
-
-/* Styling for content within the preview, if needed */
-.related-notes-preview .markdown-preview-view {
-  padding: 0; /* Remove default padding if MarkdownRenderer adds it */
-  font-size: var(--font-text-size); /* Match editor font size */
-}
-
-.related-notes-preview .markdown-preview-view .markdown-preview-sizer {
-  min-height: auto; /* Allow content to define height */
-}
-
 .related-notes-separator {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;

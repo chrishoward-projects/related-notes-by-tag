@@ -38,6 +38,13 @@ export default class RelatedNotesPlugin extends Plugin {
       (leaf) => new RelatedNotesView(leaf, this)
     );
 
+    // Lets the core Page preview plugin show previews for notes in the panel,
+    // and lists the panel in its settings so the Cmd/Ctrl requirement can be changed
+    this.registerHoverLinkSource(RELATED_NOTES_BY_TAG_VIEW_TYPE, {
+      display: this.manifest.name,
+      defaultMod: true
+    });
+
     // Add a command to activate the view
     this.addCommand({
       id: 'open-related-notes-panel',
